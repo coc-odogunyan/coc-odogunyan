@@ -1,0 +1,247 @@
+import { useState, type ReactElement } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '@/components/layout/PageHeader/PageHeader';
+import { Button } from '@/components/ui/Button/Button';
+import { Input } from '@/components/ui/Input/Input';
+import { Select } from '@/components/ui/Select/Select';
+import { Badge } from '@/components/ui/Badge/Badge';
+import { Avatar } from '@/components/ui/Avatar/Avatar';
+import { Modal } from '@/components/ui/Modal/Modal';
+import { ProgressBar } from '@/components/ui/ProgressBar/ProgressBar';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useRole } from '@/hooks/useRole';
+import { MemberForm } from '../components/MemberForm/MemberForm';
+import type { Member } from '@/types';
+import styles from './MembersPage.module.css';
+
+const ABSENT_MEMBERS = [
+  { id: '6', name: 'Emmanuel Ita',    dept: 'Youths',  missedCount: 7, lastSeen: '26 Jan 2026', phone: '+2348067890123' },
+  { id: '4', name: 'Effiong Okon',    dept: 'Media',   missedCount: 5, lastSeen: '2 Mar 2026',  phone: '+2348045678901' },
+  { id: '8', name: 'Daniel Archibong', dept: 'General', missedCount: 4, lastSeen: '9 Mar 2026',  phone: '+2348089012345' },
+  { id: '9', name: 'Nkechi Asuquo',   dept: 'Choir',   missedCount: 3, lastSeen: '2 Mar 2026',  phone: '+2348091234567' },
+];
+
+const MOCK_MEMBERS: (Member & { attendance_rate: number; last_seen: string })[] = [
+  { id: '1', auth_user_id: 'a1', full_name: 'Kufre Ekpenyong', phone: '+2348012345678', email: 'kufre@coc.org', role: 'admin', department: 'elders', gender: 'male', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 95, last_seen: '16 Mar 2026' },
+  { id: '2', auth_user_id: 'a2', full_name: 'Grace Bassey', phone: '+2348023456789', email: 'grace@coc.org', role: 'secretary', department: 'choir', gender: 'female', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 88, last_seen: '16 Mar 2026' },
+  { id: '3', auth_user_id: null, full_name: 'Samuel Udoh', phone: '+2348034567890', email: null, role: 'member', department: 'ushers', gender: 'male', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 72, last_seen: '9 Mar 2026' },
+  { id: '4', auth_user_id: null, full_name: 'Effiong Okon', phone: '+2348045678901', email: null, role: 'member', department: 'media', gender: 'male', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 65, last_seen: '2 Mar 2026' },
+  { id: '5', auth_user_id: null, full_name: 'Blessing Nkemdirim', phone: '+2348056789012', email: 'blessing@coc.org', role: 'member', department: 'welfare', gender: 'female', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 91, last_seen: '16 Mar 2026' },
+  { id: '6', auth_user_id: null, full_name: 'Emmanuel Ita', phone: '+2348067890123', email: null, role: 'member', department: 'youths', gender: 'male', is_active: false, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 40, last_seen: '26 Jan 2026' },
+  { id: '7', auth_user_id: null, full_name: 'Patience Etuk', phone: '+2348078901234', email: null, role: 'member', department: 'choir', gender: 'female', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 83, last_seen: '16 Mar 2026' },
+  { id: '8', auth_user_id: null, full_name: 'Daniel Archibong', phone: '+2348089012345', email: null, role: 'member', department: 'general', gender: 'male', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 58, last_seen: '9 Mar 2026' },
+];
+
+const DEPT_OPTIONS = [
+  { value: '', label: 'All Departments' },
+  { value: 'choir', label: 'Choir' },
+  { value: 'ushers', label: 'Ushers' },
+  { value: 'elders', label: 'Elders' },
+  { value: 'media', label: 'Media' },
+  { value: 'welfare', label: 'Welfare' },
+  { value: 'youths', label: 'Youths' },
+  { value: 'general', label: 'General' },
+];
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'All Status' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+];
+
+export function MembersPage(): ReactElement {
+  const navigate = useNavigate();
+  const breakpoint = useBreakpoint();
+  const { isSecretary } = useRole();
+  const [search, setSearch] = useState('');
+  const [deptFilter, setDeptFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [viewMode, setViewMode] = useState<'table' | 'card'>(breakpoint === 'mobile' ? 'card' : 'table');
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  const filtered = MOCK_MEMBERS.filter(m => {
+    const matchSearch = !debouncedSearch || m.full_name.toLowerCase().includes(debouncedSearch.toLowerCase()) || m.phone.includes(debouncedSearch);
+    const matchDept   = !deptFilter   || m.department === deptFilter;
+    const matchStatus = !statusFilter || (statusFilter === 'active' ? m.is_active : !m.is_active);
+    return matchSearch && matchDept && matchStatus;
+  });
+
+  const roleBadge = (role: Member['role']) => {
+    if (role === 'admin')     return <Badge variant="info" size="sm">Admin</Badge>;
+    if (role === 'secretary') return <Badge variant="gold" size="sm">Secretary</Badge>;
+    return <Badge variant="muted" size="sm">Member</Badge>;
+  };
+
+  return (
+    <div className="animate-fade-in">
+      <PageHeader
+        title="Members"
+        description={`${filtered.length} of ${MOCK_MEMBERS.length} members`}
+        actions={isSecretary ? <Button onClick={() => setShowAddModal(true)}>+ Add Member</Button> : undefined}
+      />
+
+      {/* Controls */}
+      <div className={styles.controls}>
+        <div className={styles.searchInput}>
+          <Input
+            aria-label="Search members"
+            placeholder="Search by name or phone..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            leftIcon={
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            }
+          />
+        </div>
+        <div className={styles.filterGroup}>
+          <Select options={DEPT_OPTIONS} value={deptFilter} onChange={e => setDeptFilter(e.target.value)} aria-label="Department filter" />
+          <Select options={STATUS_OPTIONS} value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Status filter" />
+        </div>
+        {breakpoint !== 'mobile' && (
+          <div className={styles.viewToggle}>
+            <button className={`${styles.viewBtn} ${viewMode === 'table' ? styles.active : ''}`} onClick={() => setViewMode('table')} aria-label="Table view">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <button className={`${styles.viewBtn} ${viewMode === 'card' ? styles.active : ''}`} onClick={() => setViewMode('card')} aria-label="Grid view">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          title="No members found"
+          description="Try adjusting your search or filters."
+          action={isSecretary ? { label: '+ Add Member', onClick: () => setShowAddModal(true) } : undefined}
+        />
+      ) : viewMode === 'table' && breakpoint !== 'mobile' ? (
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th className={styles.th}>Member</th>
+                <th className={styles.th}>Department</th>
+                <th className={styles.th}>Role</th>
+                <th className={styles.th}>Last Seen</th>
+                <th className={styles.th}>Attendance</th>
+                <th className={styles.th}>Status</th>
+                <th className={styles.th}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(m => (
+                <tr key={m.id} className={styles.tr}>
+                  <td className={styles.td}>
+                    <div className={styles.memberCell}>
+                      <Avatar name={m.full_name} role={m.role} size="sm" />
+                      <div>
+                        <div className={styles.memberName}>{m.full_name}</div>
+                        <div className={styles.memberDept}>{m.phone}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className={styles.td} style={{ textTransform: 'capitalize' }}>{m.department}</td>
+                  <td className={styles.td}>{roleBadge(m.role)}</td>
+                  <td className={styles.td}>{m.last_seen}</td>
+                  <td className={styles.td} style={{ minWidth: 120 }}>
+                    <ProgressBar value={m.attendance_rate} color={m.attendance_rate >= 75 ? 'success' : 'danger'} height={4} showLabel />
+                  </td>
+                  <td className={styles.td}>
+                    <Badge variant={m.is_active ? 'success' : 'muted'} size="sm">{m.is_active ? 'Active' : 'Inactive'}</Badge>
+                  </td>
+                  <td className={styles.td}>
+                    <div className={styles.actions}>
+                      <Button size="sm" variant="ghost" onClick={() => navigate(`/members/${m.id}`)}>View</Button>
+                      {isSecretary && <Button size="sm" variant="ghost">Edit</Button>}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className={styles.cardGrid}>
+          {filtered.map(m => (
+            <div key={m.id} className={styles.memberCard} onClick={() => navigate(`/members/${m.id}`)}>
+              <div className={styles.cardTop}>
+                <Avatar name={m.full_name} role={m.role} size="md" />
+                <div className={styles.cardInfo}>
+                  <div className={styles.cardName}>{m.full_name}</div>
+                  <div className={styles.cardDept}>{m.department}</div>
+                </div>
+                <Badge variant={m.is_active ? 'success' : 'muted'} size="sm">{m.is_active ? 'Active' : 'Inactive'}</Badge>
+              </div>
+              <div className={styles.cardMeta}>
+                {roleBadge(m.role)}
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{m.phone}</span>
+              </div>
+              <div className={styles.attendanceRate}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span className={styles.rateLabel}>Attendance</span>
+                  <span className={styles.rateLabel}>{m.attendance_rate}%</span>
+                </div>
+                <ProgressBar value={m.attendance_rate} color={m.attendance_rate >= 75 ? 'success' : 'danger'} height={4} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {filtered.length > 0 && (
+        <div className={styles.pagination}>
+          <button className={styles.pageBtn}>‹</button>
+          <button className={`${styles.pageBtn} ${styles.activePage}`}>1</button>
+          <button className={styles.pageBtn}>2</button>
+          <button className={styles.pageBtn}>3</button>
+          <button className={styles.pageBtn}>›</button>
+        </div>
+      )}
+
+      {/* Who Needs a Visit */}
+      <div className={styles.consistencySection}>
+        <div className={styles.consistencyHeader}>
+          <div>
+            <h3 className={styles.consistencyTitle}>Who Needs a Visit?</h3>
+            <p className={styles.consistencySub}>Members absent 3 or more consecutive services</p>
+          </div>
+          {isSecretary && (
+            <Button variant="ghost" size="sm">Send Follow-up</Button>
+          )}
+        </div>
+        {ABSENT_MEMBERS.length === 0 ? (
+          <div className={styles.consistencyEmpty}>All members attended at least one of the last 3 services.</div>
+        ) : (
+          <div className={styles.consistencyList}>
+            {ABSENT_MEMBERS.map(m => (
+              <div key={m.id} className={styles.consistencyRow}>
+                <Avatar name={m.name} role="member" size="sm" />
+                <div className={styles.consistencyInfo}>
+                  <div className={styles.consistencyName}>{m.name}</div>
+                  <div className={styles.consistencyMeta}>{m.dept} · Last seen {m.lastSeen}</div>
+                </div>
+                <Badge variant="danger" size="sm">{m.missedCount} missed</Badge>
+                {isSecretary && (
+                  <Button variant="ghost" size="sm" onClick={() => navigate(`/members/${m.id}`)}>View</Button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add Member Modal */}
+      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Member" size="md">
+        <MemberForm onSuccess={() => setShowAddModal(false)} onCancel={() => setShowAddModal(false)} />
+      </Modal>
+    </div>
+  );
+}

@@ -1,0 +1,27 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.footer {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.notifyRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.notifyRow input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-gold);
+}

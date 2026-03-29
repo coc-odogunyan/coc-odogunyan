@@ -1,0 +1,49 @@
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.section-label {
+  font-family: var(--font-body);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: var(--space-3);
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  border: none;
+  margin: var(--space-5) 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-slow) ease both;
+}

@@ -1,0 +1,123 @@
+.summaryBar {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.summaryStats {
+  display: flex;
+  gap: var(--space-6);
+  margin-bottom: var(--space-3);
+}
+
+.statItem { text-align: center; }
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.present { color: var(--color-success); }
+.absent  { color: var(--color-danger); }
+.excused { color: var(--color-gold); }
+
+.compositeBar {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-elevated);
+  display: flex;
+  overflow: hidden;
+}
+
+.barPresent { background: var(--color-success); transition: width var(--transition-slow); }
+.barExcused { background: var(--color-gold);    transition: width var(--transition-slow); }
+
+.controls {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.searchInput { flex: 1; min-width: 200px; }
+
+.rollList {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.rollRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+  transition: background var(--transition-fast);
+}
+
+.rollRow:last-child { border-bottom: none; }
+.rollRow:hover { background: var(--color-bg-card-hover); }
+
+.memberInfo { flex: 1; min-width: 0; }
+.memberName { font-size: var(--text-sm); color: var(--color-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.memberDept { font-size: var(--text-xs); color: var(--color-text-muted); text-transform: capitalize; }
+
+/* Attendance check buttons */
+.checkGroup {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.checkBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-input);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.checkBtn.presentActive { background: var(--color-success); border-color: var(--color-success); color: white; }
+.checkBtn.absentActive  { background: var(--color-danger);  border-color: var(--color-danger);  color: white; }
+.checkBtn.excusedActive { background: var(--color-gold);    border-color: var(--color-gold);    color: var(--color-text-inverse); }
+
+@media (max-width: 767px) {
+  .checkBtn { width: 44px; height: 44px; }
+  .summaryStats { gap: var(--space-4); flex-wrap: wrap; }
+  .searchInput { min-width: 0; }
+}
+
+/* Save button */
+.saveBar {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8) 0 var(--space-4);
+}
+
+.saveBtn { min-width: 200px; }
+
+@media (max-width: 767px) {
+  .saveBtn { width: 100%; }
+}
