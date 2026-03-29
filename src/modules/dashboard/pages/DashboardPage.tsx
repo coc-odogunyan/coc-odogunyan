@@ -2,10 +2,8 @@ import type { ReactElement } from 'react';
 import { StatCard } from '@/components/ui/StatCard/StatCard';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
-import { Button } from '@/components/ui/Button/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar/ProgressBar';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
-import { useRole } from '@/hooks/useRole';
 import styles from './DashboardPage.module.css';
 
 // ── Mock data ──────────────────────────────────────────────
@@ -69,7 +67,6 @@ function deptColor(rate: number): string {
 
 export function DashboardPage(): ReactElement {
   const breakpoint = useBreakpoint();
-  const { isSecretary } = useRole();
 
   const total = MEMBER_STATS.active + MEMBER_STATS.inactive;
   const activePct = Math.round((MEMBER_STATS.active / total) * 100);
@@ -251,7 +248,6 @@ export function DashboardPage(): ReactElement {
           <div className={styles.pendingCard}>
             <div className={styles.pendingHeader}>
               <h3 className={styles.sectionTitle} style={{ marginBottom: 0 }}>Unconfirmed Duties</h3>
-              {isSecretary && <Button variant="ghost" size="sm">Send All</Button>}
             </div>
             <div className={styles.pendingList}>
               {PENDING_DUTIES.map(d => (

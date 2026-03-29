@@ -105,21 +105,19 @@
 
 @media (max-width: 767px) {
   .checkBtn { width: 44px; height: 44px; }
-  .summaryStats { gap: var(--space-4); }
+  .summaryStats { gap: var(--space-4); flex-wrap: wrap; }
+  .searchInput { min-width: 0; }
 }
 
 /* Save button */
 .saveBar {
-  position: sticky;
-  bottom: calc(var(--mobile-nav-height) + var(--space-2));
   display: flex;
-  justify-content: flex-end;
-  padding: var(--space-4) 0;
-  pointer-events: none;
+  justify-content: center;
+  padding: var(--space-8) 0 var(--space-4);
 }
 
-@media (min-width: 768px) {
-  .saveBar { bottom: var(--space-4); }
-}
+.saveBtn { min-width: 200px; }
 
-.saveBtn { pointer-events: all; box-shadow: var(--shadow-lg); }
+@media (max-width: 767px) {
+  .saveBtn { width: 100%; }
+}

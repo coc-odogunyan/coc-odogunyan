@@ -4,33 +4,25 @@ import { PageHeader } from '@/components/layout/PageHeader/PageHeader';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { useRole } from '@/hooks/useRole';
+import { MOCK_SERVICES, SERVICE_TYPE_LABEL } from '@/mock/services';
 import styles from './AttendancePage.module.css';
 
-interface AttendanceServiceItem {
-  id: string;
-  date: string;
-  type: string;
-  time: string;
-  status: 'not-marked' | 'in-progress' | 'complete';
-  markedCount: number;
-  totalCount: number;
-}
+// Derive attendance sessions from the shared services mock.
+// Upcoming services start as 'not-marked'; past services get a status.
+const MOCK_ATTENDANCE_STATUS: Record<string, 'not-marked' | 'in-progress' | 'complete'> = {
+  s1: 'not-marked',
+  s2: 'not-marked',
+  s3: 'complete',
+  s4: 'complete',
+  s5: 'in-progress',
+  s6: 'complete',
+};
 
-const MOCK_SERVICES: AttendanceServiceItem[] = [
-  { id: 's1', date: '22 Mar 2026', type: 'Sunday Service',    time: '9:00 AM', status: 'not-marked',  markedCount: 0,  totalCount: 107 },
-  { id: 's2', date: '16 Mar 2026', type: 'Sunday Service',    time: '9:00 AM', status: 'complete',    markedCount: 107, totalCount: 107 },
-  { id: 's3', date: '12 Mar 2026', type: 'Wednesday Service', time: '6:00 PM', status: 'complete',    markedCount: 107, totalCount: 107 },
-  { id: 's4', date: '9 Mar 2026',  type: 'Sunday Service',    time: '9:00 AM', status: 'complete',    markedCount: 107, totalCount: 107 },
-  { id: 's5', date: '5 Mar 2026',  type: 'Wednesday Service', time: '6:00 PM', status: 'in-progress', markedCount: 38,  totalCount: 107 },
-  { id: 's6', date: '2 Mar 2026',  type: 'Sunday Service',    time: '9:00 AM', status: 'complete',    markedCount: 107, totalCount: 107 },
-];
+const MOCK_MARKED_COUNT: Record<string, number> = {
+  s5: 38,
+};
 
-function StatusDisplay({ item }: { item: AttendanceServiceItem }): ReactElement {
-  if (item.status === 'not-marked') return <span className={styles.statusNotMarked}>Not marked yet</span>;
-  if (item.status === 'in-progress') return <span className={styles.statusInProgress}>In progress · {item.markedCount}/{item.totalCount} marked</span>;
-  const present = Math.floor(item.totalCount * 0.89);
-  return <span className={styles.statusComplete}>Complete · {present} present</span>;
-}
+const TOTAL_MEMBERS = 107;
 
 export function AttendancePage(): ReactElement {
   const navigate = useNavigate();
@@ -44,34 +36,50 @@ export function AttendancePage(): ReactElement {
       />
 
       <div className={styles.grid}>
-        {MOCK_SERVICES.map(s => (
-          <div key={s.id} className={styles.serviceCard}>
-            <div className={styles.cardHeader}>
-              <div>
-                <div className={styles.serviceDate}>{s.date}</div>
-                <div className={styles.serviceType}>{s.type} · {s.time}</div>
+        {MOCK_SERVICES.map(s => {
+          const status = MOCK_ATTENDANCE_STATUS[s.id] ?? 'not-marked';
+          const markedCount = MOCK_MARKED_COUNT[s.id] ?? (status === 'complete' ? TOTAL_MEMBERS : 0);
+          const present = status === 'complete' ? Math.floor(TOTAL_MEMBERS * 0.89) : null;
+
+          return (
+            <div key={s.id} className={styles.serviceCard}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <div className={styles.serviceDate}>{s.fullDate}</div>
+                  <div className={styles.serviceType}>{SERVICE_TYPE_LABEL[s.type]} · {s.time}</div>
+                </div>
+                <Badge
+                  variant={status === 'complete' ? 'success' : status === 'in-progress' ? 'warn' : 'muted'}
+                  size="sm"
+                >
+                  {status === 'complete' ? 'Complete' : status === 'in-progress' ? 'In Progress' : 'Not Marked'}
+                </Badge>
               </div>
-              <Badge
-                variant={s.status === 'complete' ? 'success' : s.status === 'in-progress' ? 'warn' : 'muted'}
-                size="sm"
-              >
-                {s.status === 'complete' ? 'Complete' : s.status === 'in-progress' ? 'In Progress' : 'Not Marked'}
-              </Badge>
+
+              <div className={styles.attendanceStatus}>
+                {status === 'not-marked' && (
+                  <span className={styles.statusNotMarked}>Not marked yet</span>
+                )}
+                {status === 'in-progress' && (
+                  <span className={styles.statusInProgress}>In progress · {markedCount}/{TOTAL_MEMBERS} marked</span>
+                )}
+                {status === 'complete' && (
+                  <span className={styles.statusComplete}>Complete · {present} present</span>
+                )}
+              </div>
+
+              {isSecretary && (
+                <Button
+                  size="sm"
+                  variant={status === 'not-marked' ? 'primary' : 'ghost'}
+                  onClick={() => navigate(`/attendance/${s.id}`)}
+                >
+                  {status === 'not-marked' ? 'Mark Attendance' : 'View / Edit'}
+                </Button>
+              )}
             </div>
-            <div className={styles.attendanceStatus}>
-              <StatusDisplay item={s} />
-            </div>
-            {isSecretary && (
-              <Button
-                size="sm"
-                variant={s.status === 'not-marked' ? 'primary' : 'ghost'}
-                onClick={() => navigate(`/attendance/${s.id}`)}
-              >
-                {s.status === 'not-marked' ? 'Mark Attendance' : 'View / Edit'}
-              </Button>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

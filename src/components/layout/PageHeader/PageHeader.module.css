@@ -18,6 +18,8 @@
 
 @media (max-width: 767px) {
   .title { font-size: var(--text-xl); }
+  .header { margin-bottom: var(--space-4); }
+  .actions { width: 100%; justify-content: flex-end; }
 }
 
 .description {

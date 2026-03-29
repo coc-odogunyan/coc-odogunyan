@@ -18,7 +18,6 @@ interface FormValues {
   duty_role: string;
   custom_role: string;
   member: string;
-  notify: boolean;
 }
 
 const MEMBERS = [
@@ -32,16 +31,14 @@ const MEMBERS = [
 ];
 
 export function AssignmentForm({ serviceId: _serviceId, serviceType, onSuccess, onCancel }: AssignmentFormProps): ReactElement {
-  const { register, handleSubmit, watch, formState: { isSubmitting } } = useForm<FormValues>({
-    defaultValues: { notify: true },
-  });
+  const { register, handleSubmit, watch, formState: { isSubmitting } } = useForm<FormValues>();
+
+  const templateRoles = DUTIES_BY_TYPE[serviceType];
+  const isAdHoc = templateRoles.length === 0;
 
   const dutyRole = watch(isAdHoc ? 'custom_role' : 'duty_role');
   const member   = watch('member');
   const canSubmit = !!dutyRole?.trim() && !!member;
-
-  const templateRoles = DUTIES_BY_TYPE[serviceType];
-  const isAdHoc = templateRoles.length === 0;
 
   const dutyOptions = templateRoles.map(r => ({ value: r, label: r }));
 
@@ -68,13 +65,9 @@ export function AssignmentForm({ serviceId: _serviceId, serviceType, onSuccess, 
         />
       )}
       <Select label="Assign To" options={MEMBERS} placeholder="Select member…" {...register('member')} />
-      <label className={styles.notifyRow}>
-        <input type="checkbox" {...register('notify')} />
-        Send WhatsApp notification immediately
-      </label>
       <div className={styles.footer}>
         <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" isLoading={isSubmitting} disabled={!canSubmit || isSubmitting}>Assign + Notify</Button>
+        <Button type="submit" isLoading={isSubmitting} disabled={!canSubmit || isSubmitting}>Assign Duty</Button>
       </div>
     </form>
   );

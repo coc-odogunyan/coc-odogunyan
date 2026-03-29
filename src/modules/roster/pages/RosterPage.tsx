@@ -1,8 +1,6 @@
 import { useState, type ReactElement } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader/PageHeader';
 import { Button } from '@/components/ui/Button/Button';
-import { Badge } from '@/components/ui/Badge/Badge';
-import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { Modal } from '@/components/ui/Modal/Modal';
 import { ProgressBar } from '@/components/ui/ProgressBar/ProgressBar';
 import { useRole } from '@/hooks/useRole';
@@ -27,7 +25,6 @@ interface RosterAssignment {
   member: string;
   memberRole: 'member' | 'secretary' | 'admin';
   status: AssignmentStatus;
-  notified: boolean;
 }
 
 // ── Duty definitions ─────────────────────────────────────────
@@ -94,37 +91,27 @@ const SERVICES: RosterService[] = [
 
 const ASSIGNMENTS: Record<string, RosterAssignment[]> = {
   s1: [
-    { id: '1',  role: 'Moderator',                   member: 'Kufre Ekpenyong',    memberRole: 'admin',     status: 'confirmed', notified: true  },
-    { id: '2',  role: 'Sermon',                      member: 'Grace Bassey',       memberRole: 'secretary', status: 'confirmed', notified: true  },
-    { id: '3',  role: 'Opening Prayer',              member: 'Samuel Udoh',        memberRole: 'member',    status: 'assigned',  notified: true  },
-    { id: '4',  role: 'Closing Prayer',              member: 'Effiong Okon',       memberRole: 'member',    status: 'assigned',  notified: false },
-    { id: '5',  role: 'Bible Reader',                member: 'Patience Etuk',      memberRole: 'member',    status: 'confirmed', notified: true  },
-    { id: '6',  role: 'Collection',                  member: 'Blessing Nkemdirim', memberRole: 'member',    status: 'reminded',  notified: true  },
-    { id: '7',  role: 'Ushers',                      member: 'Daniel Archibong',   memberRole: 'member',    status: 'declined',  notified: true  },
-    { id: '8',  role: 'Communion',                   member: 'Kufre Ekpenyong',    memberRole: 'admin',     status: 'confirmed', notified: true  },
-    { id: '9',  role: "Children Class 1 Teacher",    member: 'Patience Etuk',      memberRole: 'member',    status: 'assigned',  notified: true  },
-    { id: '10', role: "Sister's Class Moderator",    member: 'Blessing Nkemdirim', memberRole: 'member',    status: 'confirmed', notified: true  },
+    { id: '1',  role: 'Moderator',                member: 'Kufre Ekpenyong',    memberRole: 'admin',     status: 'assigned' },
+    { id: '2',  role: 'Sermon',                   member: 'Grace Bassey',       memberRole: 'secretary', status: 'assigned' },
+    { id: '3',  role: 'Opening Prayer',           member: 'Samuel Udoh',        memberRole: 'member',    status: 'assigned' },
+    { id: '4',  role: 'Closing Prayer',           member: 'Effiong Okon',       memberRole: 'member',    status: 'assigned' },
+    { id: '5',  role: 'Bible Reader',             member: 'Patience Etuk',      memberRole: 'member',    status: 'assigned' },
+    { id: '6',  role: 'Collection',               member: 'Blessing Nkemdirim', memberRole: 'member',    status: 'assigned' },
+    { id: '7',  role: 'Ushers',                   member: 'Daniel Archibong',   memberRole: 'member',    status: 'assigned' },
+    { id: '8',  role: 'Communion',                member: 'Kufre Ekpenyong',    memberRole: 'admin',     status: 'assigned' },
+    { id: '9',  role: "Children Class 1 Teacher", member: 'Patience Etuk',      memberRole: 'member',    status: 'assigned' },
+    { id: '10', role: "Sister's Class Moderator", member: 'Blessing Nkemdirim', memberRole: 'member',    status: 'assigned' },
   ],
   s2: [
-    { id: '11', role: 'Moderator', member: 'Samuel Udoh', memberRole: 'member', status: 'confirmed', notified: true },
+    { id: '11', role: 'Moderator', member: 'Samuel Udoh', memberRole: 'member', status: 'assigned' },
   ],
   s3: [],
   s4: [],
   s5: [
-    { id: '12', role: 'Lead Intercessor', member: 'Kufre Ekpenyong',  memberRole: 'admin',  status: 'confirmed', notified: true },
-    { id: '13', role: 'Song Leader',      member: 'Grace Bassey',     memberRole: 'secretary', status: 'assigned', notified: false },
+    { id: '12', role: 'Lead Intercessor', member: 'Kufre Ekpenyong', memberRole: 'admin',     status: 'assigned' },
+    { id: '13', role: 'Song Leader',      member: 'Grace Bassey',    memberRole: 'secretary', status: 'assigned' },
   ],
   s6: [],
-};
-
-// ── Badge map ────────────────────────────────────────────────
-
-const STATUS_BADGE: Record<AssignmentStatus, ReactElement> = {
-  assigned:  <Badge variant="muted"   size="sm">Assigned</Badge>,
-  confirmed: <Badge variant="success" size="sm">Confirmed</Badge>,
-  reminded:  <Badge variant="gold"    size="sm">Reminded</Badge>,
-  swapped:   <Badge variant="info"    size="sm">Swapped</Badge>,
-  declined:  <Badge variant="danger"  size="sm">Declined</Badge>,
 };
 
 // ── Component ────────────────────────────────────────────────
@@ -149,42 +136,18 @@ export function RosterPage(): ReactElement {
     ? templateRoles.filter(r => assignMap.has(r)).length
     : assignments.filter(a => a.status === 'confirmed').length;
 
-  const renderTemplatedRows = () => {
-    if (service.type === 'sunday') {
-      return SUNDAY_DUTY_GROUPS.map(group => (
-        <>
-          <tr key={`grp-${group.label}`} className={styles.groupRow}>
-            <td colSpan={isSecretary ? 5 : 4} className={styles.groupCell}>{group.label}</td>
-          </tr>
-          {group.roles.map(role => {
-            const a = assignMap.get(role);
-            return renderSlotRow(role, a);
-          })}
-        </>
-      ));
-    }
-    // wednesday / friday — single row
-    return templateRoles.map(role => renderSlotRow(role, assignMap.get(role)));
-  };
+  const renderTemplatedRows = () =>
+    templateRoles.map(role => renderSlotRow(role, assignMap.get(role)));
 
   const renderSlotRow = (role: string, a?: RosterAssignment) => (
     <tr key={role} className={styles.tr}>
       <td className={styles.td}>{role}</td>
       <td className={styles.td}>
         {a ? (
-          <div className={styles.memberCell}>
-            <Avatar name={a.member} role={a.memberRole} size="sm" />
-            {a.member}
-          </div>
+          <span>{a.member}</span>
         ) : (
           <span className={styles.unassigned}>— Unassigned</span>
         )}
-      </td>
-      <td className={styles.td}>{a ? STATUS_BADGE[a.status] : <Badge variant="muted" size="sm">Empty</Badge>}</td>
-      <td className={styles.td}>
-        {a ? (
-          <Badge variant={a.notified ? 'success' : 'muted'} size="sm">{a.notified ? 'Sent' : 'Pending'}</Badge>
-        ) : '—'}
       </td>
       {isSecretary && (
         <td className={styles.td}>
@@ -198,16 +161,7 @@ export function RosterPage(): ReactElement {
     assignments.map(a => (
       <tr key={a.id} className={styles.tr}>
         <td className={styles.td}>{a.role}</td>
-        <td className={styles.td}>
-          <div className={styles.memberCell}>
-            <Avatar name={a.member} role={a.memberRole} size="sm" />
-            {a.member}
-          </div>
-        </td>
-        <td className={styles.td}>{STATUS_BADGE[a.status]}</td>
-        <td className={styles.td}>
-          <Badge variant={a.notified ? 'success' : 'muted'} size="sm">{a.notified ? 'Sent' : 'Pending'}</Badge>
-        </td>
+        <td className={styles.td}>{a.member}</td>
         {isSecretary && (
           <td className={styles.td}><Button size="sm" variant="ghost">Swap</Button></td>
         )}
@@ -250,9 +204,6 @@ export function RosterPage(): ReactElement {
               <div className={styles.rosterTitle}>{SERVICE_TYPE_LABEL[service.type]}</div>
               <div className={styles.rosterDate}>{service.date}</div>
             </div>
-            {isSecretary && totalSlots > 0 && (
-              <Button variant="ghost" size="sm">Send Reminders to Pending</Button>
-            )}
           </div>
 
           {/* Progress summary */}
@@ -286,8 +237,6 @@ export function RosterPage(): ReactElement {
                   <tr>
                     <th className={styles.th}>Duty Role</th>
                     <th className={styles.th}>Assigned To</th>
-                    <th className={styles.th}>Status</th>
-                    <th className={styles.th}>Notified</th>
                     {isSecretary && <th className={styles.th}></th>}
                   </tr>
                 </thead>
