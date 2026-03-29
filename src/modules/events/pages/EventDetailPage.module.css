@@ -1,0 +1,52 @@
+.page { max-width: 720px; }
+
+.card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.eventHeader {
+  margin-bottom: var(--space-5);
+}
+
+.eventTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.meta {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  margin: var(--space-5) 0;
+}
+
+.description {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.infoRow {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-4);
+}
+
+.infoLabel { min-width: 80px; }
+.infoValue { color: var(--color-text-secondary); }

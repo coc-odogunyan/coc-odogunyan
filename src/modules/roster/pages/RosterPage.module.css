@@ -1,0 +1,200 @@
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: var(--space-5);
+  min-height: calc(100vh - var(--topbar-height) - 2 * var(--page-padding-y));
+}
+
+.serviceList {
+  overflow-y: auto;
+  border-right: 1px solid var(--color-border-subtle);
+  padding-right: var(--space-4);
+}
+
+.serviceListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.serviceListLabel {
+  font-size: var(--text-xs);
+  color: var(--color-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.addServiceBtn {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-gold-border);
+  background: var(--color-gold-bg);
+  color: var(--color-gold);
+  font-size: var(--text-md);
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.addServiceBtn:hover {
+  background: var(--color-gold);
+  color: var(--color-text-inverse);
+}
+
+.serviceItem {
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  margin-bottom: 2px;
+}
+
+.serviceItem:hover { background: var(--color-bg-card); }
+
+.serviceItem.selected {
+  background: var(--color-gold-bg);
+  border: 1px solid var(--color-gold-border);
+}
+
+.serviceItemDate {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+
+.serviceItemType {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Roster Panel */
+.rosterPanel { overflow-y: auto; }
+
+.rosterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.rosterTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--color-text-primary);
+}
+
+.rosterDate {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.confirmCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.confirmRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.confirmLabel { font-size: var(--text-sm); color: var(--color-text-muted); }
+.confirmCount { font-size: var(--text-md); color: var(--color-text-primary); font-family: var(--font-display); }
+
+/* Assignment Table */
+.assignTable {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-family: var(--font-body);
+  font-weight: normal;
+}
+
+.td {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border-subtle);
+  vertical-align: middle;
+}
+
+.tr:last-child .td { border-bottom: none; }
+.tr:hover .td { background: var(--color-bg-card-hover); }
+
+.groupRow { background: var(--color-bg-elevated); }
+
+.groupCell {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.memberCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.unassigned {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.emptyState {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+@media (max-width: 1023px) {
+  .layout { grid-template-columns: 1fr; min-height: auto; }
+  .serviceList {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border-subtle);
+    padding-right: 0;
+    padding-bottom: var(--space-4);
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .serviceItem { flex-shrink: 0; min-width: 120px; }
+}

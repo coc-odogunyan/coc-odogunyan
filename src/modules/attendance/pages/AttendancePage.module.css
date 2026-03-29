@@ -1,0 +1,53 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 1023px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.serviceCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: background var(--transition-fast);
+}
+
+.serviceCard:hover { background: var(--color-bg-card-hover); }
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.serviceDate {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  color: var(--color-text-primary);
+}
+
+.serviceType {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.attendanceStatus {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.statusNotMarked { color: var(--color-text-muted); }
+.statusInProgress { color: var(--color-warn); }
+.statusComplete { color: var(--color-success); }

@@ -1,0 +1,166 @@
+/* ================================================
+   TYPOGRAPHY SYSTEM
+   Playfair Display  — headings/display
+   Inter             — body, UI, labels
+   ================================================ */
+
+/* === Heading hierarchy === */
+
+h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);       /* 24px */
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);        /* 20px */
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+
+h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);        /* 17px */
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--color-text-primary);
+}
+
+h4 {
+  font-family: var(--font-body);
+  font-size: var(--text-md);        /* 15px */
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-text-primary);
+  letter-spacing: 0.01em;
+}
+
+h5 {
+  font-family: var(--font-body);
+  font-size: var(--text-base);      /* 13px */
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+h6 {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);        /* 12px */
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+p {
+  font-family: var(--font-body);
+  font-size: var(--text-base);      /* 13px */
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+}
+
+/* === Utility type classes === */
+
+/* Large hero / login headings */
+.display {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);       /* 30px */
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+/* Intro / lead paragraph */
+.body-lg {
+  font-family: var(--font-body);
+  font-size: var(--text-md);        /* 15px */
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+}
+
+/* Standard body */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);      /* 13px */
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+}
+
+/* Secondary / supporting body */
+.body-sm {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);        /* 12px */
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+/* Form labels, table column headers */
+.label-ui {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);        /* 11px */
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+}
+
+/* Metadata, dates, file sizes */
+.caption {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);        /* 11px */
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+
+/* Section markers — "UPCOMING", "MEMBERS", department tags */
+.overline {
+  font-family: var(--font-body);
+  font-size: 0.625rem;              /* 10px */
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-gold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Existing utility aliases (kept for backwards compat) */
+.text-xs    { font-size: var(--text-xs); }
+.text-sm    { font-size: var(--text-sm); }
+.text-base  { font-size: var(--text-base); }
+.text-md    { font-size: var(--text-md); }
+.text-lg    { font-size: var(--text-lg); }
+.text-xl    { font-size: var(--text-xl); }
+.text-2xl   { font-size: var(--text-2xl); }
+.text-3xl   { font-size: var(--text-3xl); }
+
+.text-primary   { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-muted     { color: var(--color-text-muted); }
+.text-gold      { color: var(--color-gold); }
+.text-success   { color: var(--color-success); }
+.text-danger    { color: var(--color-danger); }
+
+.font-display { font-family: var(--font-display); }
+.font-body    { font-family: var(--font-body); }
+
+.uppercase    { text-transform: uppercase; }
+.tracked      { letter-spacing: 0.12em; }
+.tracked-wide { letter-spacing: 0.18em; }
+.truncate     { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Responsive scaling — headings shrink on mobile */
+@media (max-width: 767px) {
+  h1      { font-size: var(--text-xl); }
+  h2      { font-size: var(--text-lg); }
+  .display { font-size: var(--text-2xl); }
+}

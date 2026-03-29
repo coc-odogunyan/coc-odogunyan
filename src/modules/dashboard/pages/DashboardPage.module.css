@@ -1,0 +1,365 @@
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: var(--space-5);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+}
+
+/* Attendance Trend Chart */
+.trendCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.trendHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.trendAvg {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.chartWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.chartArea {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 130px;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  gap: 4px;
+  position: relative;
+}
+
+.barCol:hover .barTooltip { opacity: 1; pointer-events: auto; }
+
+.bar {
+  width: 100%;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: var(--color-gold);
+  cursor: pointer;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  min-height: 3px;
+}
+
+.bar:hover { transform: scaleY(1.03); transform-origin: bottom; }
+
+.barLabel {
+  font-size: 0.6rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.barTooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 3px 7px;
+  font-size: var(--text-xs);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+  z-index: 10;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Services Table */
+.servicesCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-5);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-family: var(--font-body);
+  font-weight: normal;
+}
+
+.td {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border-subtle);
+  vertical-align: middle;
+}
+
+.tr:last-child .td { border-bottom: none; }
+.tr:hover .td { background: var(--color-bg-card-hover); }
+
+/* Department Attendance */
+.deptCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.deptList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.deptRow {
+  display: grid;
+  grid-template-columns: 72px 1fr 40px 80px;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.deptName {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.deptBarTrack {
+  height: 8px;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.deptBarFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+.deptRate {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-align: right;
+}
+
+.deptCount {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+/* Donut chart */
+.donutCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.donutLayout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.donut {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donutHole {
+  width: 64px;
+  height: 64px;
+  background: var(--color-bg-card);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.donutPct {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.donutSub {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.donutLegend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendValue {
+  font-size: var(--text-md);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.legendLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Right sidebar */
+.nextServiceCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-gold-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.nextServiceLabel {
+  font-size: var(--text-xs);
+  color: var(--color-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: var(--space-3);
+}
+
+.nextServiceType {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.nextServiceDate {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.nextServiceTheme {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin-bottom: var(--space-4);
+}
+
+.dutiesProgress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.dutiesLabel { font-size: var(--text-xs); color: var(--color-text-muted); }
+.dutiesCount { font-size: var(--text-sm); color: var(--color-text-secondary); }
+
+/* Pending duties */
+.pendingCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.pendingHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.pendingList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.pendingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.pendingRole { font-size: var(--text-sm); color: var(--color-text-primary); flex: 1; }
+.pendingName { font-size: var(--text-xs); color: var(--color-text-muted); }
+
+@media (max-width: 1199px) {
+  .statsGrid { grid-template-columns: repeat(2, 1fr); }
+  .contentGrid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 767px) {
+  .statsGrid { grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+}
+
+@media (max-width: 480px) {
+  .statsGrid { grid-template-columns: 1fr 1fr; }
+}
