@@ -1,73 +1,95 @@
-# React + TypeScript + Vite
+# COC Odogunyan — Secretariat
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A digital operations platform for the Church of Christ, Odogunyan. Built to help the church secretary manage members, attendance, duty rosters, services, and events from a single interface.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Dashboard** — attendance trend chart, department attendance breakdown, active/inactive member donut, and a "Who Needs a Visit?" watchlist
+- **Members** — member register with search, department/status filtering, table and card grid views
+- **Attendance** — service-by-service attendance tracking with per-member marking
+- **Duty Roster** — templated duty slots per service type (Sunday has 25 grouped roles; Wednesday/Friday have a single moderator; Fasting and Evangelism are ad-hoc)
+- **Services** — service calendar with upcoming and past services
+- **Events** — announcements, programs, outreach, and special events with draft/publish flow
+- **Role-based access** — Admin, Secretary, and Member roles with guarded routes
+- **Light / Dark theme** — toggle with system preference detection and `localStorage` persistence
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Concern | Choice |
+|---|---|
+| Framework | React 18 + TypeScript |
+| Build tool | Vite |
+| Routing | React Router v6 |
+| Forms | React Hook Form + Zod |
+| Styling | CSS Modules + CSS custom properties |
+| Fonts | Playfair Display (headings) · Inter (UI) |
+| Auth | Mock (Supabase integration pending) |
+| Database | Supabase (integration pending) |
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Project Structure
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── assets/
+│   └── images/          # logo.png (dark), logoLightTheme.png (light)
+├── components/
+│   ├── layout/          # AppShell, Sidebar, TopBar, MobileNav, PageHeader
+│   └── ui/              # Button, Input, Select, Badge, Avatar, Modal, ProgressBar, …
+├── context/             # AuthContext, ThemeContext
+├── hooks/               # useBreakpoint, useDebounce, useRole
+├── lib/                 # toast (lightweight event emitter)
+├── modules/
+│   ├── auth/            # LoginPage, LoginForm
+│   ├── dashboard/       # DashboardPage
+│   ├── attendance/      # AttendancePage, AttendanceDetailPage
+│   ├── roster/          # RosterPage, AssignmentForm, NewServiceForm
+│   ├── services/        # ServicesPage, ServiceForm
+│   ├── events/          # EventsPage, EventDetailPage, EventForm
+│   └── members/         # MembersPage, MemberForm
+├── styles/              # tokens.css, reset.css, typography.css, globals.css
+└── types/               # Shared TypeScript types
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Getting Started
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
+
+The app runs at `http://localhost:5173`.
+
+**Demo login** (mock auth — any credentials work during UI phase):
+- Email: `kufre@coc.org`
+- Password: any value
+
+---
+
+## Service Types & Duty Roles
+
+| Service | Duties |
+|---|---|
+| Sunday Worship | 25 roles across 5 groups (Leadership, Worship & Word, Sacraments, Congregation Support, Classes) |
+| Wednesday Prayer | Moderator |
+| Friday Bible Study | Moderator |
+| Fasting & Prayer | Ad-hoc (defined per session) |
+| Evangelism | Ad-hoc (defined per session) |
+
+---
+
+## Roadmap
+
+- [ ] Supabase auth integration
+- [ ] Supabase database integration (replace all mock data)
+- [ ] WhatsApp duty notifications via Supabase Edge Functions
+- [ ] PWA setup (offline support, installable)
+- [ ] Member profile page
+- [ ] Attendance marking flow (per-member check-in)
