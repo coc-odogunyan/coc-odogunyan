@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { toast } from '@/lib/toast';
 import { useAuth } from '@/hooks/useAuth';
 import { servicesApi } from '@/api/services';
+import { useEnums } from '@/hooks/useEnums';
 import { serviceSchema, type ServiceFormData } from '../../services.schema';
 import styles from './ServiceForm.module.css';
 
@@ -18,6 +19,8 @@ interface ServiceFormProps {
 
 export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps): ReactElement {
   const { member } = useAuth();
+  const { serviceTypeOptions, loading: enumsLoading } = useEnums();
+
   const { register, handleSubmit, formState: { errors, isSubmitting, isValid } } = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
     defaultValues: { service_type: 'sunday' },
@@ -42,12 +45,8 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps): ReactEle
     <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
       <Select
         label="Service Type"
-        options={[
-          { value: 'sunday',    label: 'Sunday Service' },
-          { value: 'wednesday', label: 'Wednesday Service' },
-          { value: 'friday',    label: 'Friday Service' },
-          { value: 'special',   label: 'Special Service' },
-        ]}
+        options={serviceTypeOptions}
+        disabled={enumsLoading}
         error={errors.service_type?.message}
         {...register('service_type')}
       />
@@ -59,7 +58,7 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps): ReactEle
       <Textarea label="Notes (optional)" placeholder="Any additional notes..." {...register('notes')} />
       <div className={styles.footer}>
         <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" isLoading={isSubmitting} disabled={!isValid || isSubmitting}>Add Service</Button>
+        <Button type="submit" isLoading={isSubmitting} disabled={!isValid || isSubmitting || enumsLoading}>Add Service</Button>
       </div>
     </form>
   );

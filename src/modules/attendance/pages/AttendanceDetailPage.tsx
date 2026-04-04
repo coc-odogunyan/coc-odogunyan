@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAsync } from '@/hooks/useAsync';
+import { useEnums } from '@/hooks/useEnums';
 import { attendanceApi } from '@/api/attendance';
 import { toast } from '@/lib/toast';
 import type { AttendanceStatus, RollEntry } from '@/types';
@@ -22,16 +23,6 @@ const SERVICE_TYPE_LABEL: Record<string, string> = {
   special:    'Special Service',
 };
 
-const DEPT_OPTIONS = [
-  { value: '', label: 'All Departments' },
-  { value: 'counselling', label: 'Counselling' },
-  { value: 'benevolence', label: 'Benevolence' },
-  { value: 'building', label: 'Building' },
-  { value: 'media', label: 'Media' },
-  { value: 'ushering', label: 'Ushering' },
-  { value: 'disciplinary', label: 'Disciplinary' },
-];
-
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-GB', {
     day: 'numeric', month: 'short', year: 'numeric',
@@ -42,10 +33,9 @@ export function AttendanceDetailPage(): ReactElement {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data, loading, error, refetch } = useAsync(
-    () => attendanceApi.getSession(id!),
-    [id],
-  );
+  const { data, loading, error, refetch } = useAsync(() => attendanceApi.getSession(id!), [id]);
+  const { departmentOptions } = useEnums();
+  const deptFilterOptions = [{ value: '', label: 'All Departments' }, ...departmentOptions];
 
   const [roll, setRoll] = useState<RollEntry[]>([]);
   const [search, setSearch] = useState('');
@@ -169,7 +159,7 @@ export function AttendanceDetailPage(): ReactElement {
         <div className={styles.searchInput}>
           <Input aria-label="Search members" placeholder="Search member..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <Select options={DEPT_OPTIONS} value={deptFilter} onChange={e => setDeptFilter(e.target.value)} aria-label="Filter by department" />
+        <Select options={deptFilterOptions} value={deptFilter} onChange={e => setDeptFilter(e.target.value)} aria-label="Filter by department" />
         <Button variant="ghost" size="sm" onClick={markAllPresent}>Mark All Present</Button>
       </div>
 

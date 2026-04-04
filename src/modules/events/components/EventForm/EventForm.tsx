@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { toast } from '@/lib/toast';
 import { useAuth } from '@/hooks/useAuth';
 import { eventsApi } from '@/api/events';
+import { useEnums } from '@/hooks/useEnums';
 import { eventSchema, type EventFormData } from '../../events.schema';
 import styles from './EventForm.module.css';
 
@@ -18,6 +19,8 @@ interface EventFormProps {
 
 export function EventForm({ onSuccess, onCancel }: EventFormProps): ReactElement {
   const { member } = useAuth();
+  const { eventTypeOptions, loading: enumsLoading } = useEnums();
+
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting, isValid } } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: { event_type: 'announcement', is_published: false },
@@ -44,26 +47,14 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps): ReactElement
     }
   };
 
-  const handleDraft = () => {
-    setValue('is_published', false);
-  };
-
-  const handlePublish = () => {
-    setValue('is_published', true);
-  };
-
   return (
     <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
       <Input label="Title" placeholder="e.g. Easter Sunday Celebration" error={errors.title?.message} {...register('title')} />
       <Textarea label="Description (optional)" placeholder="Describe the event..." rows={4} {...register('description')} />
       <Select
         label="Event Type"
-        options={[
-          { value: 'announcement', label: 'Announcement' },
-          { value: 'program',      label: 'Program' },
-          { value: 'outreach',     label: 'Outreach' },
-          { value: 'special',      label: 'Special' },
-        ]}
+        options={eventTypeOptions}
+        disabled={enumsLoading}
         error={errors.event_type?.message}
         {...register('event_type')}
       />
@@ -75,8 +66,8 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps): ReactElement
 
       <div className={styles.publishRow}>
         <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" variant="ghost" isLoading={isSubmitting} disabled={!isValid || isSubmitting} onClick={handleDraft}>Save as Draft</Button>
-        <Button type="submit" isLoading={isSubmitting} disabled={!isValid || isSubmitting} onClick={handlePublish}>Publish</Button>
+        <Button type="submit" variant="ghost" isLoading={isSubmitting} disabled={!isValid || isSubmitting || enumsLoading} onClick={() => setValue('is_published', false)}>Save as Draft</Button>
+        <Button type="submit" isLoading={isSubmitting} disabled={!isValid || isSubmitting || enumsLoading} onClick={() => setValue('is_published', true)}>Publish</Button>
       </div>
     </form>
   );

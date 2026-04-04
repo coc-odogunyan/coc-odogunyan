@@ -6,6 +6,7 @@ import { toast } from '@/lib/toast';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/hooks/useAuth';
 import { servicesApi } from '@/api/services';
+import { useEnums } from '@/hooks/useEnums';
 import styles from './NewServiceForm.module.css';
 
 interface NewServiceFormProps {
@@ -20,16 +21,10 @@ interface FormValues {
   notes: string;
 }
 
-const TYPE_OPTIONS = [
-  { value: 'sunday',     label: 'Sunday Worship Service' },
-  { value: 'wednesday',  label: 'Wednesday Prayer Session' },
-  { value: 'friday',     label: 'Friday Bible Study' },
-  { value: 'fasting',    label: 'Fasting & Prayer Session' },
-  { value: 'evangelism', label: 'Evangelism' },
-];
-
 export function NewServiceForm({ onSuccess, onCancel }: NewServiceFormProps): ReactElement {
   const { member } = useAuth();
+  const { serviceTypeOptions, loading: enumsLoading } = useEnums();
+
   const { register, handleSubmit, watch, formState: { isSubmitting } } = useForm<FormValues>();
 
   const type = watch('type');
@@ -57,28 +52,17 @@ export function NewServiceForm({ onSuccess, onCancel }: NewServiceFormProps): Re
     <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
       <Select
         label="Service Type"
-        options={TYPE_OPTIONS}
+        options={serviceTypeOptions}
         placeholder="Select type…"
+        disabled={enumsLoading}
         {...register('type', { required: true })}
       />
-      <Input
-        label="Date"
-        type="date"
-        {...register('date', { required: true })}
-      />
-      <Input
-        label="Time (optional)"
-        type="time"
-        {...register('time')}
-      />
-      <Input
-        label="Notes (optional)"
-        placeholder="e.g. theme, special instructions…"
-        {...register('notes')}
-      />
+      <Input label="Date" type="date" {...register('date', { required: true })} />
+      <Input label="Time (optional)" type="time" {...register('time')} />
+      <Input label="Notes (optional)" placeholder="e.g. theme, special instructions…" {...register('notes')} />
       <div className={styles.footer}>
         <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" isLoading={isSubmitting} disabled={!canSubmit || isSubmitting}>Create Service</Button>
+        <Button type="submit" isLoading={isSubmitting} disabled={!canSubmit || isSubmitting || enumsLoading}>Create Service</Button>
       </div>
     </form>
   );

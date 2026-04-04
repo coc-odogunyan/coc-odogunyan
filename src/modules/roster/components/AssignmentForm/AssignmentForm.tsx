@@ -6,9 +6,10 @@ import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { toast } from '@/lib/toast';
 import { useForm } from 'react-hook-form';
 import { useAsync } from '@/hooks/useAsync';
+import { useEnums } from '@/hooks/useEnums';
 import { membersApi } from '@/api/members';
 import { rosterApi } from '@/api/roster';
-import { DUTIES_BY_TYPE, type ServiceType } from '../../pages/RosterPage';
+import type { ServiceType } from '../../pages/RosterPage';
 import styles from './AssignmentForm.module.css';
 
 interface AssignmentFormProps {
@@ -27,8 +28,9 @@ interface FormValues {
 export function AssignmentForm({ serviceId, serviceType, onSuccess, onCancel }: AssignmentFormProps): ReactElement {
   const { register, handleSubmit, watch, formState: { isSubmitting } } = useForm<FormValues>();
   const { data: members, loading: membersLoading } = useAsync(() => membersApi.getAll(), []);
+  const { dutyRolesByType, loading: enumsLoading } = useEnums();
 
-  const templateRoles = DUTIES_BY_TYPE[serviceType];
+  const templateRoles = dutyRolesByType[serviceType] ?? [];
   const isAdHoc = templateRoles.length === 0;
 
   const dutyRole = watch(isAdHoc ? 'custom_role' : 'duty_role');
@@ -55,7 +57,11 @@ export function AssignmentForm({ serviceId, serviceType, onSuccess, onCancel }: 
 
   return (
     <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
-      {isAdHoc ? (
+      {enumsLoading ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <Spinner size="sm" /> <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Loading roles…</span>
+        </div>
+      ) : isAdHoc ? (
         <Input
           label="Duty Role"
           placeholder="e.g. Lead Intercessor, Song Leader…"
@@ -78,7 +84,7 @@ export function AssignmentForm({ serviceId, serviceType, onSuccess, onCancel }: 
       )}
       <div className={styles.footer}>
         <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" isLoading={isSubmitting} disabled={!canSubmit || isSubmitting || membersLoading}>Assign Duty</Button>
+        <Button type="submit" isLoading={isSubmitting} disabled={!canSubmit || isSubmitting || membersLoading || enumsLoading}>Assign Duty</Button>
       </div>
     </form>
   );

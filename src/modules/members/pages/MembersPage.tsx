@@ -14,27 +14,11 @@ import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useRole } from '@/hooks/useRole';
 import { useAsync } from '@/hooks/useAsync';
+import { useEnums } from '@/hooks/useEnums';
 import { MemberForm } from '../components/MemberForm/MemberForm';
 import { membersApi } from '@/api/members';
 import type { Member } from '@/types';
 import styles from './MembersPage.module.css';
-
-
-const DEPT_OPTIONS = [
-  { value: '', label: 'All Departments' },
-  { value: 'counselling', label: 'Counselling' },
-  { value: 'benevolence', label: 'Benevolence' },
-  { value: 'building', label: 'Building' },
-  { value: 'media', label: 'Media' },
-  { value: 'ushering', label: 'Ushering' },
-  { value: 'disciplinary', label: 'Disciplinary' },
-];
-
-const STATUS_OPTIONS = [
-  { value: '', label: 'All Status' },
-  { value: 'active', label: 'Active' },
-  { value: 'disfellowshipped', label: 'Disfellowshipped' },
-];
 
 export function MembersPage(): ReactElement {
   const navigate = useNavigate();
@@ -47,10 +31,11 @@ export function MembersPage(): ReactElement {
   const [showAddModal, setShowAddModal] = useState(false);
 
   const debouncedSearch = useDebounce(search, 300);
-  const { data: members, loading, error, refetch } = useAsync(
-    () => membersApi.getAll(),
-    [],
-  );
+  const { data: members, loading, error, refetch } = useAsync(() => membersApi.getAll(), []);
+  const { departmentOptions, statusOptions } = useEnums();
+
+  const deptFilterOptions  = [{ value: '', label: 'All Departments' }, ...departmentOptions];
+  const statusFilterOptions = [{ value: '', label: 'All Status' }, ...statusOptions];
 
   const allMembers = members ?? [];
 
@@ -108,8 +93,8 @@ export function MembersPage(): ReactElement {
           />
         </div>
         <div className={styles.filterGroup}>
-          <Select options={DEPT_OPTIONS} value={deptFilter} onChange={e => setDeptFilter(e.target.value)} aria-label="Department filter" />
-          <Select options={STATUS_OPTIONS} value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Status filter" />
+          <Select options={deptFilterOptions} value={deptFilter} onChange={e => setDeptFilter(e.target.value)} aria-label="Department filter" />
+          <Select options={statusFilterOptions} value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Status filter" />
         </div>
         {breakpoint !== 'mobile' && (
           <div className={styles.viewToggle}>
