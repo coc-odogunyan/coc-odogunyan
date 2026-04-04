@@ -86,8 +86,8 @@ export function Sidebar({ collapsed = false }: SidebarProps): ReactElement {
 
   const visibleItems = NAV_ITEMS.filter(item => hasRole(item.roles));
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 

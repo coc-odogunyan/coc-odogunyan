@@ -6,6 +6,7 @@ import { Select } from '@/components/ui/Select/Select';
 import { Textarea } from '@/components/ui/Textarea/Textarea';
 import { Button } from '@/components/ui/Button/Button';
 import { toast } from '@/lib/toast';
+import { membersApi } from '@/api/members';
 import { memberSchema, type MemberFormData } from '../../members.schema';
 import styles from './MemberForm.module.css';
 
@@ -22,10 +23,25 @@ export function MemberForm({ initialData, onSuccess, onCancel }: MemberFormProps
     mode: 'onChange',
   });
 
-  const onSubmit = async (_data: MemberFormData) => {
-    await new Promise(r => setTimeout(r, 600));
-    toast.success('Member saved successfully');
-    onSuccess();
+  const onSubmit = async (data: MemberFormData) => {
+    try {
+      await membersApi.create({
+        auth_user_id: null,
+        full_name:    data.full_name,
+        phone:        data.phone,
+        email:        data.email || null,
+        department:   data.department,
+        role:         data.role,
+        gender:       data.gender ?? null,
+        is_active:    data.is_active,
+        notes:        data.notes || null,
+      });
+      toast.success('Member saved successfully');
+      onSuccess();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save member';
+      toast.error(message);
+    }
   };
 
   return (

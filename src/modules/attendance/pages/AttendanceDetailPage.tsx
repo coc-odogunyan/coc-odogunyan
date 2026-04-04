@@ -1,31 +1,26 @@
-import { useState, type ReactElement } from 'react';
+import { useState, useEffect, type ReactElement } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { Select } from '@/components/ui/Select/Select';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useAsync } from '@/hooks/useAsync';
+import { attendanceApi } from '@/api/attendance';
 import { toast } from '@/lib/toast';
-import type { AttendanceStatus } from '@/types';
+import type { AttendanceStatus, RollEntry } from '@/types';
 import styles from './AttendanceDetailPage.module.css';
 
-interface RollMember {
-  id: string;
-  name: string;
-  department: string;
-  status: AttendanceStatus | null;
-}
-
-const INITIAL_ROLL: RollMember[] = [
-  { id: '1', name: 'Kufre Ekpenyong',    department: 'elders',  status: 'present' },
-  { id: '2', name: 'Grace Bassey',        department: 'choir',   status: 'present' },
-  { id: '3', name: 'Samuel Udoh',         department: 'ushers',  status: null },
-  { id: '4', name: 'Effiong Okon',        department: 'media',   status: 'absent' },
-  { id: '5', name: 'Blessing Nkemdirim', department: 'welfare', status: 'present' },
-  { id: '6', name: 'Emmanuel Ita',        department: 'youths',  status: 'excused' },
-  { id: '7', name: 'Patience Etuk',       department: 'choir',   status: 'present' },
-  { id: '8', name: 'Daniel Archibong',    department: 'general', status: null },
-];
+const SERVICE_TYPE_LABEL: Record<string, string> = {
+  sunday:     'Sunday Worship Service',
+  wednesday:  'Wednesday Prayer Session',
+  friday:     'Friday Bible Study',
+  fasting:    'Fasting & Prayer Session',
+  evangelism: 'Evangelism',
+  special:    'Special Service',
+};
 
 const DEPT_OPTIONS = [
   { value: '', label: 'All Departments' },
@@ -35,10 +30,22 @@ const DEPT_OPTIONS = [
   { value: 'general', label: 'General' },
 ];
 
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric',
+  });
+}
+
 export function AttendanceDetailPage(): ReactElement {
-  const { id: _id } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [roll, setRoll] = useState<RollMember[]>(INITIAL_ROLL);
+
+  const { data, loading, error, refetch } = useAsync(
+    () => attendanceApi.getSession(id!),
+    [id],
+  );
+
+  const [roll, setRoll] = useState<RollEntry[]>([]);
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -46,33 +53,70 @@ export function AttendanceDetailPage(): ReactElement {
 
   const debouncedSearch = useDebounce(search, 200);
 
+  useEffect(() => {
+    if (data?.roll) {
+      setRoll(data.roll);
+      setSaved(false);
+    }
+  }, [data]);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-16)' }}>
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <EmptyState
+        title="Failed to load session"
+        description={error ?? 'Session not found'}
+        action={{ label: 'Retry', onClick: refetch }}
+      />
+    );
+  }
+
+  const { session } = data;
+  const svc = session.services;
+
   const present = roll.filter(m => m.status === 'present').length;
   const absent  = roll.filter(m => m.status === 'absent').length;
   const excused = roll.filter(m => m.status === 'excused').length;
   const total   = roll.length;
 
   const filtered = roll.filter(m => {
-    const matchSearch = !debouncedSearch || m.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+    const matchSearch = !debouncedSearch || m.full_name.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchDept   = !deptFilter     || m.department === deptFilter;
     return matchSearch && matchDept;
   });
 
   const mark = (memberId: string, status: AttendanceStatus) => {
-    setRoll(prev => prev.map(m => m.id === memberId ? { ...m, status } : m));
+    setRoll(prev => prev.map(m => m.member_id === memberId ? { ...m, status } : m));
     setSaved(false);
   };
 
   const markAllPresent = () => {
-    setRoll(prev => prev.map(m => ({ ...m, status: 'present' })));
+    setRoll(prev => prev.map(m => ({ ...m, status: 'present' as AttendanceStatus })));
     setSaved(false);
   };
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise(r => setTimeout(r, 800));
-    setIsSaving(false);
-    setSaved(true);
-    toast.success('Attendance saved successfully');
+    try {
+      await attendanceApi.save({
+        session_id: session.id,
+        records: roll.map(m => ({ member_id: m.member_id, status: m.status ?? 'absent' })),
+      });
+      setSaved(true);
+      toast.success('Attendance saved successfully');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save';
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -83,9 +127,11 @@ export function AttendanceDetailPage(): ReactElement {
 
       <div style={{ marginBottom: 'var(--space-4)' }}>
         <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', color: 'var(--color-text-primary)' }}>
-          Sunday Service — 22 Mar 2026
+          {SERVICE_TYPE_LABEL[svc.service_type] ?? svc.service_type} — {formatDate(svc.service_date)}
         </h2>
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>9:00 AM · Mark attendance below</p>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+          {svc.service_time ? `${svc.service_time} · ` : ''}Mark attendance below
+        </p>
       </div>
 
       {/* Summary Bar */}
@@ -108,10 +154,12 @@ export function AttendanceDetailPage(): ReactElement {
             <div className={styles.statLabel}>Total</div>
           </div>
         </div>
-        <div className={styles.compositeBar}>
-          <div className={styles.barPresent} style={{ width: `${(present / total) * 100}%` }} />
-          <div className={styles.barExcused} style={{ width: `${(excused / total) * 100}%` }} />
-        </div>
+        {total > 0 && (
+          <div className={styles.compositeBar}>
+            <div className={styles.barPresent} style={{ width: `${(present / total) * 100}%` }} />
+            <div className={styles.barExcused} style={{ width: `${(excused / total) * 100}%` }} />
+          </div>
+        )}
       </div>
 
       {/* Controls */}
@@ -126,29 +174,29 @@ export function AttendanceDetailPage(): ReactElement {
       {/* Roll List */}
       <div className={styles.rollList}>
         {filtered.map(member => (
-          <div key={member.id} className={styles.rollRow}>
-            <Avatar name={member.name} size="sm" />
+          <div key={member.member_id} className={styles.rollRow}>
+            <Avatar name={member.full_name} size="sm" />
             <div className={styles.memberInfo}>
-              <div className={styles.memberName}>{member.name}</div>
+              <div className={styles.memberName}>{member.full_name}</div>
               <div className={styles.memberDept}>{member.department}</div>
             </div>
             <div className={styles.checkGroup}>
               <button
                 className={`${styles.checkBtn} ${member.status === 'present' ? styles.presentActive : ''}`}
-                onClick={() => mark(member.id, 'present')}
-                aria-label={`Mark ${member.name} present`}
+                onClick={() => mark(member.member_id, 'present')}
+                aria-label={`Mark ${member.full_name} present`}
                 title="Present"
               >✓</button>
               <button
                 className={`${styles.checkBtn} ${member.status === 'absent' ? styles.absentActive : ''}`}
-                onClick={() => mark(member.id, 'absent')}
-                aria-label={`Mark ${member.name} absent`}
+                onClick={() => mark(member.member_id, 'absent')}
+                aria-label={`Mark ${member.full_name} absent`}
                 title="Absent"
               >–</button>
               <button
                 className={`${styles.checkBtn} ${member.status === 'excused' ? styles.excusedActive : ''}`}
-                onClick={() => mark(member.id, 'excused')}
-                aria-label={`Mark ${member.name} excused`}
+                onClick={() => mark(member.member_id, 'excused')}
+                aria-label={`Mark ${member.full_name} excused`}
                 title="Excused"
               >E</button>
             </div>

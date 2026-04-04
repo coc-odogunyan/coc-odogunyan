@@ -1,5 +1,4 @@
 import type { Member } from './member.types';
-import type { Department } from './member.types';
 import type { Service } from './service.types';
 
 export type AssignmentStatus = 'assigned' | 'confirmed' | 'reminded' | 'swapped' | 'declined';
@@ -7,7 +6,7 @@ export type AssignmentStatus = 'assigned' | 'confirmed' | 'reminded' | 'swapped'
 export interface DutyRole {
   id: string;
   name: string;
-  department: Department | null;
+  department: string | null;
   description: string | null;
 }
 
@@ -15,15 +14,17 @@ export interface DutyAssignment {
   id: string;
   service_id: string;
   member_id: string;
-  duty_role_id: string;
-  status: AssignmentStatus;
-  assigned_by: string;
-  notified_at: string | null;
+  duty_role: string;
+  created_by: string;
   created_at: string;
+  updated_at: string;
+}
+
+export interface DutyAssignmentWithMember extends DutyAssignment {
+  profiles: Pick<Member, 'id' | 'full_name' | 'department'>;
 }
 
 export interface DutyAssignmentFull extends DutyAssignment {
   member: Pick<Member, 'id' | 'full_name' | 'phone' | 'department'>;
-  duty_role: DutyRole;
   service: Service;
 }

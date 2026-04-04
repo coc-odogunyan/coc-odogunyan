@@ -9,30 +9,16 @@ import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { Modal } from '@/components/ui/Modal/Modal';
 import { ProgressBar } from '@/components/ui/ProgressBar/ProgressBar';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useRole } from '@/hooks/useRole';
+import { useAsync } from '@/hooks/useAsync';
 import { MemberForm } from '../components/MemberForm/MemberForm';
+import { membersApi } from '@/api/members';
 import type { Member } from '@/types';
 import styles from './MembersPage.module.css';
 
-const ABSENT_MEMBERS = [
-  { id: '6', name: 'Emmanuel Ita',    dept: 'Youths',  missedCount: 7, lastSeen: '26 Jan 2026', phone: '+2348067890123' },
-  { id: '4', name: 'Effiong Okon',    dept: 'Media',   missedCount: 5, lastSeen: '2 Mar 2026',  phone: '+2348045678901' },
-  { id: '8', name: 'Daniel Archibong', dept: 'General', missedCount: 4, lastSeen: '9 Mar 2026',  phone: '+2348089012345' },
-  { id: '9', name: 'Nkechi Asuquo',   dept: 'Choir',   missedCount: 3, lastSeen: '2 Mar 2026',  phone: '+2348091234567' },
-];
-
-const MOCK_MEMBERS: (Member & { attendance_rate: number; last_seen: string })[] = [
-  { id: '1', auth_user_id: 'a1', full_name: 'Kufre Ekpenyong', phone: '+2348012345678', email: 'kufre@coc.org', role: 'admin', department: 'elders', gender: 'male', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 95, last_seen: '16 Mar 2026' },
-  { id: '2', auth_user_id: 'a2', full_name: 'Grace Bassey', phone: '+2348023456789', email: 'grace@coc.org', role: 'secretary', department: 'choir', gender: 'female', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 88, last_seen: '16 Mar 2026' },
-  { id: '3', auth_user_id: null, full_name: 'Samuel Udoh', phone: '+2348034567890', email: null, role: 'member', department: 'ushers', gender: 'male', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 72, last_seen: '9 Mar 2026' },
-  { id: '4', auth_user_id: null, full_name: 'Effiong Okon', phone: '+2348045678901', email: null, role: 'member', department: 'media', gender: 'male', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 65, last_seen: '2 Mar 2026' },
-  { id: '5', auth_user_id: null, full_name: 'Blessing Nkemdirim', phone: '+2348056789012', email: 'blessing@coc.org', role: 'member', department: 'welfare', gender: 'female', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 91, last_seen: '16 Mar 2026' },
-  { id: '6', auth_user_id: null, full_name: 'Emmanuel Ita', phone: '+2348067890123', email: null, role: 'member', department: 'youths', gender: 'male', is_active: false, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 40, last_seen: '26 Jan 2026' },
-  { id: '7', auth_user_id: null, full_name: 'Patience Etuk', phone: '+2348078901234', email: null, role: 'member', department: 'choir', gender: 'female', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 83, last_seen: '16 Mar 2026' },
-  { id: '8', auth_user_id: null, full_name: 'Daniel Archibong', phone: '+2348089012345', email: null, role: 'member', department: 'general', gender: 'male', is_active: true, notes: null, created_at: '2024-01-01', updated_at: '2024-01-01', attendance_rate: 58, last_seen: '9 Mar 2026' },
-];
 
 const DEPT_OPTIONS = [
   { value: '', label: 'All Departments' },
@@ -62,8 +48,14 @@ export function MembersPage(): ReactElement {
   const [showAddModal, setShowAddModal] = useState(false);
 
   const debouncedSearch = useDebounce(search, 300);
+  const { data: members, loading, error, refetch } = useAsync(
+    () => membersApi.getAll(),
+    [],
+  );
 
-  const filtered = MOCK_MEMBERS.filter(m => {
+  const allMembers = members ?? [];
+
+  const filtered = allMembers.filter(m => {
     const matchSearch = !debouncedSearch || m.full_name.toLowerCase().includes(debouncedSearch.toLowerCase()) || m.phone.includes(debouncedSearch);
     const matchDept   = !deptFilter   || m.department === deptFilter;
     const matchStatus = !statusFilter || (statusFilter === 'active' ? m.is_active : !m.is_active);
@@ -76,11 +68,29 @@ export function MembersPage(): ReactElement {
     return <Badge variant="muted" size="sm">Member</Badge>;
   };
 
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-16)' }}>
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <EmptyState
+        title="Failed to load members"
+        description={error}
+        action={{ label: 'Retry', onClick: refetch }}
+      />
+    );
+  }
+
   return (
     <div className="animate-fade-in">
       <PageHeader
         title="Members"
-        description={`${filtered.length} of ${MOCK_MEMBERS.length} members`}
+        description={`${filtered.length} of ${allMembers.length} members`}
         actions={isSecretary ? <Button onClick={() => setShowAddModal(true)}>+ Add Member</Button> : undefined}
       />
 
@@ -149,9 +159,9 @@ export function MembersPage(): ReactElement {
                   </td>
                   <td className={styles.td} style={{ textTransform: 'capitalize' }}>{m.department}</td>
                   <td className={styles.td}>{roleBadge(m.role)}</td>
-                  <td className={styles.td}>{m.last_seen}</td>
+                  <td className={styles.td}>{(m as Member & { last_seen?: string }).last_seen ?? '—'}</td>
                   <td className={styles.td} style={{ minWidth: 120 }}>
-                    <ProgressBar value={m.attendance_rate} color={m.attendance_rate >= 75 ? 'success' : 'danger'} height={4} showLabel />
+                    {(() => { const rate = (m as Member & { attendance_rate?: number }).attendance_rate ?? 0; return <ProgressBar value={rate} color={rate >= 75 ? 'success' : 'danger'} height={4} showLabel />; })()}
                   </td>
                   <td className={styles.td}>
                     <Badge variant={m.is_active ? 'success' : 'muted'} size="sm">{m.is_active ? 'Active' : 'Inactive'}</Badge>
@@ -184,11 +194,18 @@ export function MembersPage(): ReactElement {
                 <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{m.phone}</span>
               </div>
               <div className={styles.attendanceRate}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span className={styles.rateLabel}>Attendance</span>
-                  <span className={styles.rateLabel}>{m.attendance_rate}%</span>
-                </div>
-                <ProgressBar value={m.attendance_rate} color={m.attendance_rate >= 75 ? 'success' : 'danger'} height={4} />
+                {(() => {
+                  const rate = (m as Member & { attendance_rate?: number }).attendance_rate ?? 0;
+                  return (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span className={styles.rateLabel}>Attendance</span>
+                        <span className={styles.rateLabel}>{rate}%</span>
+                      </div>
+                      <ProgressBar value={rate} color={rate >= 75 ? 'success' : 'danger'} height={4} />
+                    </>
+                  );
+                })()}
               </div>
             </div>
           ))}
@@ -206,41 +223,9 @@ export function MembersPage(): ReactElement {
         </div>
       )}
 
-      {/* Who Needs a Visit */}
-      <div className={styles.consistencySection}>
-        <div className={styles.consistencyHeader}>
-          <div>
-            <h3 className={styles.consistencyTitle}>Who Needs a Visit?</h3>
-            <p className={styles.consistencySub}>Members absent 3 or more consecutive services</p>
-          </div>
-          {isSecretary && (
-            <Button variant="ghost" size="sm">Send Follow-up</Button>
-          )}
-        </div>
-        {ABSENT_MEMBERS.length === 0 ? (
-          <div className={styles.consistencyEmpty}>All members attended at least one of the last 3 services.</div>
-        ) : (
-          <div className={styles.consistencyList}>
-            {ABSENT_MEMBERS.map(m => (
-              <div key={m.id} className={styles.consistencyRow}>
-                <Avatar name={m.name} role="member" size="sm" />
-                <div className={styles.consistencyInfo}>
-                  <div className={styles.consistencyName}>{m.name}</div>
-                  <div className={styles.consistencyMeta}>{m.dept} · Last seen {m.lastSeen}</div>
-                </div>
-                <Badge variant="danger" size="sm">{m.missedCount} missed</Badge>
-                {isSecretary && (
-                  <Button variant="ghost" size="sm" onClick={() => navigate(`/members/${m.id}`)}>View</Button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Add Member Modal */}
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Member" size="md">
-        <MemberForm onSuccess={() => setShowAddModal(false)} onCancel={() => setShowAddModal(false)} />
+        <MemberForm onSuccess={() => { setShowAddModal(false); refetch(); }} onCancel={() => setShowAddModal(false)} />
       </Modal>
     </div>
   );

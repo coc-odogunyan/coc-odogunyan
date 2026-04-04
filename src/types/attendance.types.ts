@@ -4,13 +4,20 @@ export type AttendanceStatus = 'present' | 'absent' | 'excused';
 
 export interface AttendanceRecord {
   id: string;
-  service_id: string;
+  session_id: string;
   member_id: string;
   status: AttendanceStatus;
-  marked_by: string;
-  marked_at: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AttendanceRecordWithMember extends AttendanceRecord {
-  member: Pick<Member, 'id' | 'full_name' | 'department'>;
+  profiles: Pick<Member, 'id' | 'full_name' | 'department'>;
+}
+
+export interface RollEntry {
+  member_id: string;
+  full_name: string;
+  department: string;
+  status: AttendanceStatus | null;
 }

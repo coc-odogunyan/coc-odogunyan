@@ -6,6 +6,8 @@ import { Select } from '@/components/ui/Select/Select';
 import { Textarea } from '@/components/ui/Textarea/Textarea';
 import { Button } from '@/components/ui/Button/Button';
 import { toast } from '@/lib/toast';
+import { useAuth } from '@/hooks/useAuth';
+import { servicesApi } from '@/api/services';
 import { serviceSchema, type ServiceFormData } from '../../services.schema';
 import styles from './ServiceForm.module.css';
 
@@ -15,16 +17,25 @@ interface ServiceFormProps {
 }
 
 export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps): ReactElement {
+  const { member } = useAuth();
   const { register, handleSubmit, formState: { errors, isSubmitting, isValid } } = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
     defaultValues: { service_type: 'sunday' },
     mode: 'onChange',
   });
 
-  const onSubmit = async (_data: ServiceFormData) => {
-    await new Promise(r => setTimeout(r, 600));
-    toast.success('Service added successfully');
-    onSuccess();
+  const onSubmit = async (data: ServiceFormData) => {
+    try {
+      await servicesApi.create({
+        ...data,
+        created_by: member?.id ?? '',
+      });
+      toast.success('Service added successfully');
+      onSuccess();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to add service';
+      toast.error(message);
+    }
   };
 
   return (

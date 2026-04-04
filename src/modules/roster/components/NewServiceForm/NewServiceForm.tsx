@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { toast } from '@/lib/toast';
 import { useForm } from 'react-hook-form';
+import { useAuth } from '@/hooks/useAuth';
+import { servicesApi } from '@/api/services';
 import styles from './NewServiceForm.module.css';
 
 interface NewServiceFormProps {
@@ -27,16 +29,28 @@ const TYPE_OPTIONS = [
 ];
 
 export function NewServiceForm({ onSuccess, onCancel }: NewServiceFormProps): ReactElement {
+  const { member } = useAuth();
   const { register, handleSubmit, watch, formState: { isSubmitting } } = useForm<FormValues>();
 
   const type = watch('type');
   const date = watch('date');
   const canSubmit = !!type && !!date;
 
-  const onSubmit = async (_data: FormValues) => {
-    await new Promise(r => setTimeout(r, 600));
-    toast.success('Service added to roster');
-    onSuccess();
+  const onSubmit = async (data: FormValues) => {
+    try {
+      await servicesApi.create({
+        service_type: data.type as Parameters<typeof servicesApi.create>[0]['service_type'],
+        service_date: data.date,
+        service_time: data.time || undefined,
+        notes: data.notes || undefined,
+        created_by: member?.id ?? '',
+      });
+      toast.success('Service added to roster');
+      onSuccess();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create service';
+      toast.error(message);
+    }
   };
 
   return (

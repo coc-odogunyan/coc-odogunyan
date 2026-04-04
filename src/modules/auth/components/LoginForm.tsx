@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '@/context/AuthContext';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
+import { ApiError } from '@/lib/api';
 import { loginSchema, type LoginFormData } from '../auth.schema';
 import styles from './LoginForm.module.css';
 
@@ -23,8 +24,14 @@ export function LoginForm(): ReactElement {
     try {
       await login(data.email, data.password);
       navigate('/dashboard');
-    } catch {
-      setError('Invalid email or password. Please try again.');
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setError('Invalid email or password. Please try again.');
+      } else if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError('Unable to sign in. Please try again.');
+      }
     }
   };
 

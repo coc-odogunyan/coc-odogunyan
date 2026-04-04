@@ -5,20 +5,15 @@ import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { Modal } from '@/components/ui/Modal/Modal';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useRole } from '@/hooks/useRole';
+import { useAsync } from '@/hooks/useAsync';
 import { EventForm } from '../components/EventForm/EventForm';
+import { eventsApi } from '@/api/events';
 import type { ChurchEvent } from '@/types';
 import styles from './EventsPage.module.css';
 
 type TabFilter = 'all' | 'published' | 'draft' | 'archived';
-
-const MOCK_EVENTS: ChurchEvent[] = [
-  { id: '1', title: 'Easter Sunday Celebration', description: 'Join us for a special Easter Sunday service with live choir, drama presentations, and thanksgiving offerings.', event_date: '2026-04-05', event_time: '09:00', event_type: 'special', location: 'Main Hall', is_published: true, created_by: '1', created_at: '2026-03-01', updated_at: '2026-03-01' },
-  { id: '2', title: 'Youth Fellowship Night', description: 'An evening of fellowship, praise and worship, and testimony sharing for the youth department.', event_date: '2026-03-28', event_time: '18:00', event_type: 'program', location: null, is_published: true, created_by: '1', created_at: '2026-03-10', updated_at: '2026-03-10' },
-  { id: '3', title: 'Community Outreach — Ikorodu', description: 'Welfare outreach to families in need. Bring food items and clothes donations.', event_date: '2026-04-12', event_time: '08:00', event_type: 'outreach', location: 'Ikorodu Community Hall', is_published: true, created_by: '1', created_at: '2026-03-12', updated_at: '2026-03-12' },
-  { id: '4', title: 'Prayer & Fasting Week', description: 'Church-wide prayer and fasting. Daily 6 AM prayer sessions throughout the week.', event_date: '2026-04-20', event_time: '06:00', event_type: 'program', location: null, is_published: false, created_by: '1', created_at: '2026-03-15', updated_at: '2026-03-15' },
-  { id: '5', title: 'General Announcement: Building Fund', description: 'All members are reminded to contribute to the building expansion fund before end of April.', event_date: '2026-03-22', event_time: null, event_type: 'announcement', location: null, is_published: true, created_by: '1', created_at: '2026-03-18', updated_at: '2026-03-18' },
-];
 
 const TYPE_BADGE: Record<string, ReactElement> = {
   announcement: <Badge variant="info"    size="sm">Announcement</Badge>,
@@ -40,8 +35,28 @@ export function EventsPage(): ReactElement {
   const { isSecretary } = useRole();
   const [tab, setTab] = useState<TabFilter>('all');
   const [showNew, setShowNew] = useState(false);
+  const { data: events, loading, error, refetch } = useAsync(() => eventsApi.getAll(), []);
 
-  const filtered = MOCK_EVENTS.filter(e => {
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-16)' }}>
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <EmptyState
+        title="Failed to load events"
+        description={error}
+        action={{ label: 'Retry', onClick: refetch }}
+      />
+    );
+  }
+
+  const allEvents = events ?? [];
+  const filtered = allEvents.filter(e => {
     if (tab === 'all')       return true;
     if (tab === 'published') return e.is_published;
     if (tab === 'draft')     return !e.is_published;
@@ -119,7 +134,7 @@ export function EventsPage(): ReactElement {
       )}
 
       <Modal isOpen={showNew} onClose={() => setShowNew(false)} title="New Event" size="md">
-        <EventForm onSuccess={() => setShowNew(false)} onCancel={() => setShowNew(false)} />
+        <EventForm onSuccess={() => { setShowNew(false); refetch(); }} onCancel={() => setShowNew(false)} />
       </Modal>
     </div>
   );

@@ -2,8 +2,12 @@ import type { ReactElement } from 'react';
 import { Select } from '@/components/ui/Select/Select';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { toast } from '@/lib/toast';
 import { useForm } from 'react-hook-form';
+import { useAsync } from '@/hooks/useAsync';
+import { membersApi } from '@/api/members';
+import { rosterApi } from '@/api/roster';
 import { DUTIES_BY_TYPE, type ServiceType } from '../../pages/RosterPage';
 import styles from './AssignmentForm.module.css';
 
@@ -17,35 +21,36 @@ interface AssignmentFormProps {
 interface FormValues {
   duty_role: string;
   custom_role: string;
-  member: string;
+  member_id: string;
 }
 
-const MEMBERS = [
-  { value: '1', label: 'Kufre Ekpenyong' },
-  { value: '2', label: 'Grace Bassey' },
-  { value: '3', label: 'Samuel Udoh' },
-  { value: '4', label: 'Effiong Okon' },
-  { value: '5', label: 'Blessing Nkemdirim' },
-  { value: '7', label: 'Patience Etuk' },
-  { value: '8', label: 'Daniel Archibong' },
-];
-
-export function AssignmentForm({ serviceId: _serviceId, serviceType, onSuccess, onCancel }: AssignmentFormProps): ReactElement {
+export function AssignmentForm({ serviceId, serviceType, onSuccess, onCancel }: AssignmentFormProps): ReactElement {
   const { register, handleSubmit, watch, formState: { isSubmitting } } = useForm<FormValues>();
+  const { data: members, loading: membersLoading } = useAsync(() => membersApi.getAll(), []);
 
   const templateRoles = DUTIES_BY_TYPE[serviceType];
   const isAdHoc = templateRoles.length === 0;
 
   const dutyRole = watch(isAdHoc ? 'custom_role' : 'duty_role');
-  const member   = watch('member');
-  const canSubmit = !!dutyRole?.trim() && !!member;
+  const memberId = watch('member_id');
+  const canSubmit = !!dutyRole?.trim() && !!memberId;
 
   const dutyOptions = templateRoles.map(r => ({ value: r, label: r }));
+  const memberOptions = (members ?? []).map(m => ({ value: m.id, label: m.full_name }));
 
-  const onSubmit = async (_data: FormValues) => {
-    await new Promise(r => setTimeout(r, 600));
-    toast.success('Duty assigned successfully');
-    onSuccess();
+  const onSubmit = async (data: FormValues) => {
+    try {
+      await rosterApi.assignDuty({
+        service_id: serviceId,
+        member_id: data.member_id,
+        duty_role: isAdHoc ? data.custom_role : data.duty_role,
+      });
+      toast.success('Duty assigned successfully');
+      onSuccess();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to assign duty';
+      toast.error(message);
+    }
   };
 
   return (
@@ -64,10 +69,16 @@ export function AssignmentForm({ serviceId: _serviceId, serviceType, onSuccess, 
           {...register('duty_role')}
         />
       )}
-      <Select label="Assign To" options={MEMBERS} placeholder="Select member…" {...register('member')} />
+      {membersLoading ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <Spinner size="sm" /> <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Loading members…</span>
+        </div>
+      ) : (
+        <Select label="Assign To" options={memberOptions} placeholder="Select member…" {...register('member_id')} />
+      )}
       <div className={styles.footer}>
         <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" isLoading={isSubmitting} disabled={!canSubmit || isSubmitting}>Assign Duty</Button>
+        <Button type="submit" isLoading={isSubmitting} disabled={!canSubmit || isSubmitting || membersLoading}>Assign Duty</Button>
       </div>
     </form>
   );

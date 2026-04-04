@@ -6,6 +6,8 @@ import { Select } from '@/components/ui/Select/Select';
 import { Textarea } from '@/components/ui/Textarea/Textarea';
 import { Button } from '@/components/ui/Button/Button';
 import { toast } from '@/lib/toast';
+import { useAuth } from '@/hooks/useAuth';
+import { eventsApi } from '@/api/events';
 import { eventSchema, type EventFormData } from '../../events.schema';
 import styles from './EventForm.module.css';
 
@@ -15,6 +17,7 @@ interface EventFormProps {
 }
 
 export function EventForm({ onSuccess, onCancel }: EventFormProps): ReactElement {
+  const { member } = useAuth();
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting, isValid } } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: { event_type: 'announcement', is_published: false },
@@ -22,9 +25,23 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps): ReactElement
   });
 
   const onSubmit = async (data: EventFormData) => {
-    await new Promise(r => setTimeout(r, 600));
-    toast.success(data.is_published ? 'Event published' : 'Event saved as draft');
-    onSuccess();
+    try {
+      await eventsApi.create({
+        title:        data.title,
+        description:  data.description || undefined,
+        event_date:   data.event_date,
+        event_time:   data.event_time || undefined,
+        event_type:   data.event_type,
+        location:     data.location || undefined,
+        is_published: data.is_published,
+        created_by:   member?.id ?? '',
+      });
+      toast.success(data.is_published ? 'Event published' : 'Event saved as draft');
+      onSuccess();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save event';
+      toast.error(message);
+    }
   };
 
   const handleDraft = () => {

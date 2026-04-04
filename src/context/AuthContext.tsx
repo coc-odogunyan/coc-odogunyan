@@ -1,49 +1,58 @@
-import { createContext, useContext, useState, type ReactNode, type ReactElement } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode, type ReactElement } from 'react';
+import { authApi } from '@/api/auth';
+import { ApiError } from '@/lib/api';
 import type { Member } from '@/types';
 
 interface AuthContextValue {
   member: Member | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, _password: string) => Promise<void>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-// Mock member — swap out for real Supabase auth later
-const MOCK_MEMBER: Member = {
-  id: '1',
-  auth_user_id: 'auth-1',
-  full_name: 'Kufre Ekpenyong',
-  phone: '+2348012345678',
-  email: 'admin@cocodogunyan.org',
-  role: 'admin',
-  department: 'elders',
-  gender: 'male',
-  is_active: true,
-  notes: null,
-  created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
-};
+const TOKEN_KEY   = 'access_token';
+const REFRESH_KEY = 'refresh_token';
 
 export function AuthProvider({ children }: { children: ReactNode }): ReactElement {
   const [member, setMember] = useState<Member | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const login = async (email: string, _password: string) => {
-    setIsLoading(true);
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    if (email) {
-      setMember(MOCK_MEMBER);
+  const login = useCallback(async (email: string, password: string) => {
+    // Basic client-side guards before hitting the network
+    if (!email.trim() || !password) {
+      throw new ApiError('Email and password are required', 400);
     }
-    setIsLoading(false);
-  };
 
-  const logout = () => {
-    setMember(null);
-  };
+    setIsLoading(true);
+    try {
+      const result = await authApi.login({ email: email.trim().toLowerCase(), password });
+
+      // Store tokens — sessionStorage so they are cleared on tab close
+      sessionStorage.setItem(TOKEN_KEY,   result.access_token);
+      sessionStorage.setItem(REFRESH_KEY, result.refresh_token);
+
+      setMember(result.member);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Best-effort server-side invalidation — ignore errors so local state is
+      // always cleared even if the request fails
+      await authApi.logout().catch(() => undefined);
+    } finally {
+      sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(REFRESH_KEY);
+      setMember(null);
+      setIsLoading(false);
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{ member, isLoading, isAuthenticated: member !== null, login, logout }}>

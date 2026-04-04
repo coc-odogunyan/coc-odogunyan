@@ -3,32 +3,56 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { Modal } from '@/components/ui/Modal/Modal';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { useRole } from '@/hooks/useRole';
+import { useAsync } from '@/hooks/useAsync';
+import { eventsApi } from '@/api/events';
 import { EventForm } from '../components/EventForm/EventForm';
 import styles from './EventDetailPage.module.css';
 
-const MOCK_EVENT = {
-  id: '1',
-  title: 'Easter Sunday Celebration',
-  description: 'Join us for a special Easter Sunday service with live choir, drama presentations, and thanksgiving offerings.\n\nAll departments are expected to be in full attendance. Special dress code: White and Gold.\n\nRefreshments will be provided after the service.',
-  event_date: '2026-04-05',
-  event_time: '09:00',
-  event_type: 'special' as const,
-  location: 'Main Hall — COC Odogunyan',
-  is_published: true,
-  created_by: 'Kufre Ekpenyong',
-  created_at: '2026-03-01',
+const TYPE_BADGE: Record<string, ReactElement> = {
+  announcement: <Badge variant="info"    size="sm">Announcement</Badge>,
+  program:      <Badge variant="gold"    size="sm">Program</Badge>,
+  outreach:     <Badge variant="success" size="sm">Outreach</Badge>,
+  special:      <Badge variant="warn"    size="sm">Special</Badge>,
 };
 
 export function EventDetailPage(): ReactElement {
-  const { id: _id } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { isSecretary } = useRole();
   const [showEdit, setShowEdit] = useState(false);
 
-  const event = MOCK_EVENT;
+  const { data: events, loading, error, refetch } = useAsync(
+    () => eventsApi.getAll(),
+    [],
+  );
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-16)' }}>
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  const event = (events ?? []).find(e => e.id === id);
+
+  if (error || !event) {
+    return (
+      <EmptyState
+        title="Event not found"
+        description={error ?? 'This event does not exist or has been removed.'}
+        action={{ label: '← Back to Events', onClick: () => navigate('/events') }}
+      />
+    );
+  }
+
   const date = new Date(event.event_date);
-  const formattedDate = date.toLocaleDateString('en', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const formattedDate = date.toLocaleDateString('en', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  });
 
   return (
     <div className={`${styles.page} animate-fade-in`}>
@@ -40,9 +64,7 @@ export function EventDetailPage(): ReactElement {
         <div className={styles.eventHeader}>
           <h2 className={styles.eventTitle}>{event.title}</h2>
           <div className={styles.meta}>
-            <Badge variant={event.event_type === 'special' ? 'warn' : 'gold'}>
-              {event.event_type.charAt(0).toUpperCase() + event.event_type.slice(1)}
-            </Badge>
+            {TYPE_BADGE[event.event_type] ?? <Badge variant="muted" size="sm">{event.event_type}</Badge>}
             <Badge variant={event.is_published ? 'success' : 'muted'} size="sm">
               {event.is_published ? 'Published' : 'Draft'}
             </Badge>
@@ -54,7 +76,9 @@ export function EventDetailPage(): ReactElement {
 
         <div className={styles.divider} />
 
-        <div className={styles.description}>{event.description}</div>
+        {event.description && (
+          <div className={styles.description}>{event.description}</div>
+        )}
 
         <div className={styles.infoRow}>
           <span className={styles.infoLabel}>Date</span>
@@ -72,14 +96,10 @@ export function EventDetailPage(): ReactElement {
             <span className={styles.infoValue}>{event.location}</span>
           </div>
         )}
-        <div className={styles.infoRow}>
-          <span className={styles.infoLabel}>Created by</span>
-          <span className={styles.infoValue}>{event.created_by}</span>
-        </div>
       </div>
 
       <Modal isOpen={showEdit} onClose={() => setShowEdit(false)} title="Edit Event" size="md">
-        <EventForm onSuccess={() => setShowEdit(false)} onCancel={() => setShowEdit(false)} />
+        <EventForm onSuccess={() => { setShowEdit(false); refetch(); }} onCancel={() => setShowEdit(false)} />
       </Modal>
     </div>
   );
