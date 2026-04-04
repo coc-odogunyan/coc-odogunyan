@@ -49,8 +49,8 @@ export function DashboardPage(): ReactElement {
   const allSessions = sessions ?? [];
   const allEvents   = events   ?? [];
 
-  const activeMembers   = allMembers.filter(m => m.is_active).length;
-  const inactiveMembers = allMembers.filter(m => !m.is_active).length;
+  const activeMembers   = allMembers.filter(m => m.status === 'active').length;
+  const inactiveMembers = allMembers.filter(m => m.status !== 'active').length;
   const totalMembers    = allMembers.length;
   const activePct       = totalMembers > 0 ? Math.round((activeMembers / totalMembers) * 100) : 0;
   const donutStop       = `${activePct}%`;

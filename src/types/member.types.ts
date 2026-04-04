@@ -1,5 +1,6 @@
-export type MemberRole = 'admin' | 'secretary' | 'member';
-export type Department = 'choir' | 'ushers' | 'elders' | 'media' | 'welfare' | 'youths' | 'general';
+export type MemberRole       = 'admin' | 'secretariat';
+export type Department       = 'counselling' | 'benevolence' | 'building' | 'media' | 'ushering' | 'disciplinary';
+export type MemberStatus     = 'active' | 'disfellowshipped';
 
 export interface Member {
   id: string;
@@ -10,7 +11,7 @@ export interface Member {
   role: MemberRole;
   department: Department;
   gender: 'male' | 'female' | null;
-  is_active: boolean;
+  status: MemberStatus;
   notes: string | null;
   created_at: string;
   updated_at: string;

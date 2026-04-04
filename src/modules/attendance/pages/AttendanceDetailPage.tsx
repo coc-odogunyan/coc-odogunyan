@@ -24,10 +24,12 @@ const SERVICE_TYPE_LABEL: Record<string, string> = {
 
 const DEPT_OPTIONS = [
   { value: '', label: 'All Departments' },
-  { value: 'choir', label: 'Choir' }, { value: 'ushers', label: 'Ushers' },
-  { value: 'elders', label: 'Elders' }, { value: 'media', label: 'Media' },
-  { value: 'welfare', label: 'Welfare' }, { value: 'youths', label: 'Youths' },
-  { value: 'general', label: 'General' },
+  { value: 'counselling', label: 'Counselling' },
+  { value: 'benevolence', label: 'Benevolence' },
+  { value: 'building', label: 'Building' },
+  { value: 'media', label: 'Media' },
+  { value: 'ushering', label: 'Ushering' },
+  { value: 'disciplinary', label: 'Disciplinary' },
 ];
 
 function formatDate(dateStr: string): string {

@@ -1,19 +1,16 @@
 import { NavLink } from 'react-router-dom';
-import { useRole } from '@/hooks/useRole';
 import type { ReactElement } from 'react';
-import type { MemberRole } from '@/types';
 import styles from './MobileNav.module.css';
 
 interface MobileNavItem {
   label: string;
   path: string;
-  roles: MemberRole[];
   icon: ReactElement;
 }
 
 const NAV_ITEMS: MobileNavItem[] = [
   {
-    label: 'Dashboard', path: '/dashboard', roles: ['admin', 'secretary', 'member'],
+    label: 'Dashboard', path: '/dashboard',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
@@ -22,7 +19,7 @@ const NAV_ITEMS: MobileNavItem[] = [
     ),
   },
   {
-    label: 'Attendance', path: '/attendance', roles: ['admin', 'secretary'],
+    label: 'Attendance', path: '/attendance',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <polyline points="20 6 9 17 4 12"/>
@@ -30,7 +27,7 @@ const NAV_ITEMS: MobileNavItem[] = [
     ),
   },
   {
-    label: 'Roster', path: '/roster', roles: ['admin', 'secretary'],
+    label: 'Roster', path: '/roster',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
@@ -39,7 +36,7 @@ const NAV_ITEMS: MobileNavItem[] = [
     ),
   },
   {
-    label: 'Events', path: '/events', roles: ['admin', 'secretary', 'member'],
+    label: 'Events', path: '/events',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -48,7 +45,7 @@ const NAV_ITEMS: MobileNavItem[] = [
     ),
   },
   {
-    label: 'Members', path: '/members', roles: ['admin', 'secretary'],
+    label: 'Members', path: '/members',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -60,12 +57,9 @@ const NAV_ITEMS: MobileNavItem[] = [
 ];
 
 export function MobileNav(): ReactElement {
-  const { hasRole } = useRole();
-  const visibleItems = NAV_ITEMS.filter(item => hasRole(item.roles));
-
   return (
     <nav className={styles.nav} aria-label="Mobile navigation">
-      {visibleItems.map(item => (
+      {NAV_ITEMS.map(item => (
         <NavLink
           key={item.path}
           to={item.path}

@@ -22,19 +22,18 @@ import styles from './MembersPage.module.css';
 
 const DEPT_OPTIONS = [
   { value: '', label: 'All Departments' },
-  { value: 'choir', label: 'Choir' },
-  { value: 'ushers', label: 'Ushers' },
-  { value: 'elders', label: 'Elders' },
+  { value: 'counselling', label: 'Counselling' },
+  { value: 'benevolence', label: 'Benevolence' },
+  { value: 'building', label: 'Building' },
   { value: 'media', label: 'Media' },
-  { value: 'welfare', label: 'Welfare' },
-  { value: 'youths', label: 'Youths' },
-  { value: 'general', label: 'General' },
+  { value: 'ushering', label: 'Ushering' },
+  { value: 'disciplinary', label: 'Disciplinary' },
 ];
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All Status' },
   { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
+  { value: 'disfellowshipped', label: 'Disfellowshipped' },
 ];
 
 export function MembersPage(): ReactElement {
@@ -58,14 +57,13 @@ export function MembersPage(): ReactElement {
   const filtered = allMembers.filter(m => {
     const matchSearch = !debouncedSearch || m.full_name.toLowerCase().includes(debouncedSearch.toLowerCase()) || m.phone.includes(debouncedSearch);
     const matchDept   = !deptFilter   || m.department === deptFilter;
-    const matchStatus = !statusFilter || (statusFilter === 'active' ? m.is_active : !m.is_active);
+    const matchStatus = !statusFilter || m.status === statusFilter;
     return matchSearch && matchDept && matchStatus;
   });
 
   const roleBadge = (role: Member['role']) => {
-    if (role === 'admin')     return <Badge variant="info" size="sm">Admin</Badge>;
-    if (role === 'secretary') return <Badge variant="gold" size="sm">Secretary</Badge>;
-    return <Badge variant="muted" size="sm">Member</Badge>;
+    if (role === 'admin') return <Badge variant="info" size="sm">Admin</Badge>;
+    return <Badge variant="muted" size="sm">Secretariat</Badge>;
   };
 
   if (loading) {
@@ -164,7 +162,7 @@ export function MembersPage(): ReactElement {
                     {(() => { const rate = (m as Member & { attendance_rate?: number }).attendance_rate ?? 0; return <ProgressBar value={rate} color={rate >= 75 ? 'success' : 'danger'} height={4} showLabel />; })()}
                   </td>
                   <td className={styles.td}>
-                    <Badge variant={m.is_active ? 'success' : 'muted'} size="sm">{m.is_active ? 'Active' : 'Inactive'}</Badge>
+                    <Badge variant={m.status === 'active' ? 'success' : 'muted'} size="sm">{m.status === 'active' ? 'Active' : 'Disfellowshipped'}</Badge>
                   </td>
                   <td className={styles.td}>
                     <div className={styles.actions}>
@@ -187,7 +185,7 @@ export function MembersPage(): ReactElement {
                   <div className={styles.cardName}>{m.full_name}</div>
                   <div className={styles.cardDept}>{m.department}</div>
                 </div>
-                <Badge variant={m.is_active ? 'success' : 'muted'} size="sm">{m.is_active ? 'Active' : 'Inactive'}</Badge>
+                <Badge variant={m.status === 'active' ? 'success' : 'muted'} size="sm">{m.status === 'active' ? 'Active' : 'Disfellowshipped'}</Badge>
               </div>
               <div className={styles.cardMeta}>
                 {roleBadge(m.role)}

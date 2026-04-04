@@ -3,10 +3,8 @@ import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-rou
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { useAuthContext } from '@/context/AuthContext';
-import { useRole } from '@/hooks/useRole';
 import { AppShell } from '@/components/layout/AppShell/AppShell';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
-import type { MemberRole } from '@/types';
 
 // Lazy-loaded pages
 const LoginPage            = lazy(() => import('@/modules/auth/pages/LoginPage').then(m => ({ default: m.LoginPage })));
@@ -46,11 +44,6 @@ function ProtectedRoute(): ReactElement {
   return <Outlet />;
 }
 
-function RoleGuard({ roles, children }: { roles: MemberRole[]; children: ReactElement }): ReactElement {
-  const { hasRole } = useRole();
-  if (!hasRole(roles)) return <Navigate to="/dashboard" replace />;
-  return children;
-}
 
 const router = createBrowserRouter([
   {
@@ -75,27 +68,15 @@ const router = createBrowserRouter([
           },
           {
             path: 'attendance',
-            element: (
-              <RoleGuard roles={['admin', 'secretary']}>
-                <Suspense fallback={<PageLoader />}><AttendancePage /></Suspense>
-              </RoleGuard>
-            ),
+            element: <Suspense fallback={<PageLoader />}><AttendancePage /></Suspense>,
           },
           {
             path: 'attendance/:id',
-            element: (
-              <RoleGuard roles={['admin', 'secretary']}>
-                <Suspense fallback={<PageLoader />}><AttendanceDetailPage /></Suspense>
-              </RoleGuard>
-            ),
+            element: <Suspense fallback={<PageLoader />}><AttendanceDetailPage /></Suspense>,
           },
           {
             path: 'roster',
-            element: (
-              <RoleGuard roles={['admin', 'secretary']}>
-                <Suspense fallback={<PageLoader />}><RosterPage /></Suspense>
-              </RoleGuard>
-            ),
+            element: <Suspense fallback={<PageLoader />}><RosterPage /></Suspense>,
           },
           {
             path: 'events',
@@ -107,27 +88,15 @@ const router = createBrowserRouter([
           },
           {
             path: 'members',
-            element: (
-              <RoleGuard roles={['admin', 'secretary']}>
-                <Suspense fallback={<PageLoader />}><MembersPage /></Suspense>
-              </RoleGuard>
-            ),
+            element: <Suspense fallback={<PageLoader />}><MembersPage /></Suspense>,
           },
           {
             path: 'members/:id',
-            element: (
-              <RoleGuard roles={['admin', 'secretary']}>
-                <Suspense fallback={<PageLoader />}><MemberDetailPage /></Suspense>
-              </RoleGuard>
-            ),
+            element: <Suspense fallback={<PageLoader />}><MemberDetailPage /></Suspense>,
           },
           {
             path: 'services',
-            element: (
-              <RoleGuard roles={['admin', 'secretary']}>
-                <Suspense fallback={<PageLoader />}><ServicesPage /></Suspense>
-              </RoleGuard>
-            ),
+            element: <Suspense fallback={<PageLoader />}><ServicesPage /></Suspense>,
           },
         ],
       },

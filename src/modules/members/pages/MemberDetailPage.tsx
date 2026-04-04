@@ -59,13 +59,13 @@ export function MemberDetailPage(): ReactElement {
         <div className={styles.profileInfo}>
           <h2 className={styles.profileName}>{member.full_name}</h2>
           <div className={styles.profileMeta}>
-            <Badge variant={member.role === 'admin' ? 'info' : member.role === 'secretary' ? 'gold' : 'muted'}>
+            <Badge variant={member.role === 'admin' ? 'info' : 'muted'}>
               {member.role}
             </Badge>
             <span style={{ textTransform: 'capitalize' }}>{member.department}</span>
             <span>Joined {joinedDate}</span>
-            <Badge variant={member.is_active ? 'success' : 'muted'} size="sm">
-              {member.is_active ? 'Active' : 'Inactive'}
+            <Badge variant={member.status === 'active' ? 'success' : 'muted'} size="sm">
+              {member.status === 'active' ? 'Active' : 'Disfellowshipped'}
             </Badge>
           </div>
         </div>

@@ -3,7 +3,7 @@ import type { Member, MemberInsert, MemberUpdate } from '@/types';
 
 export interface GetMembersParams {
   department?: string;
-  is_active?: boolean;
+  status?: string;
   search?: string;
 }
 

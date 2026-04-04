@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/Textarea/Textarea';
 import { Button } from '@/components/ui/Button/Button';
 import { toast } from '@/lib/toast';
 import { membersApi } from '@/api/members';
+import { useEnums } from '@/hooks/useEnums';
 import { memberSchema, type MemberFormData } from '../../members.schema';
 import styles from './MemberForm.module.css';
 
@@ -17,9 +18,11 @@ interface MemberFormProps {
 }
 
 export function MemberForm({ initialData, onSuccess, onCancel }: MemberFormProps): ReactElement {
+  const { departmentOptions, roleOptions, genderOptions, statusOptions, loading: enumsLoading } = useEnums();
+
   const { register, handleSubmit, formState: { errors, isSubmitting, isValid } } = useForm<MemberFormData>({
     resolver: zodResolver(memberSchema),
-    defaultValues: { is_active: true, role: 'member', department: 'general', ...initialData },
+    defaultValues: { status: 'active', role: 'secretariat', department: 'counselling', ...initialData },
     mode: 'onChange',
   });
 
@@ -33,7 +36,7 @@ export function MemberForm({ initialData, onSuccess, onCancel }: MemberFormProps
         department:   data.department,
         role:         data.role,
         gender:       data.gender ?? null,
-        is_active:    data.is_active,
+        status:       data.status,
         notes:        data.notes || null,
       });
       toast.success('Member saved successfully');
@@ -54,22 +57,15 @@ export function MemberForm({ initialData, onSuccess, onCancel }: MemberFormProps
       <div className={styles.row}>
         <Select
           label="Department"
-          options={[
-            { value: 'choir', label: 'Choir' }, { value: 'ushers', label: 'Ushers' },
-            { value: 'elders', label: 'Elders' }, { value: 'media', label: 'Media' },
-            { value: 'welfare', label: 'Welfare' }, { value: 'youths', label: 'Youths' },
-            { value: 'general', label: 'General' },
-          ]}
+          options={departmentOptions}
+          disabled={enumsLoading}
           error={errors.department?.message}
           {...register('department')}
         />
         <Select
           label="Role"
-          options={[
-            { value: 'member', label: 'Member' },
-            { value: 'secretary', label: 'Secretary' },
-            { value: 'admin', label: 'Admin' },
-          ]}
+          options={roleOptions}
+          disabled={enumsLoading}
           error={errors.role?.message}
           {...register('role')}
         />
@@ -77,16 +73,24 @@ export function MemberForm({ initialData, onSuccess, onCancel }: MemberFormProps
       <div className={styles.row}>
         <Select
           label="Gender (optional)"
-          options={[{ value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }]}
+          options={genderOptions}
+          disabled={enumsLoading}
           placeholder="Select gender"
           {...register('gender')}
+        />
+        <Select
+          label="Status"
+          options={statusOptions}
+          disabled={enumsLoading}
+          error={errors.status?.message}
+          {...register('status')}
         />
       </div>
       <Textarea label="Notes (optional)" placeholder="Any additional notes..." {...register('notes')} />
 
       <div className={styles.footer}>
         <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" isLoading={isSubmitting} disabled={!isValid || isSubmitting}>Save Member</Button>
+        <Button type="submit" isLoading={isSubmitting} disabled={!isValid || isSubmitting || enumsLoading}>Save Member</Button>
       </div>
     </form>
   );
